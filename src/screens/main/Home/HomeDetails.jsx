@@ -1,6 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
-import { View, Image, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Image,
+  TouchableOpacity,
+  Linking,
+  ActivityIndicator,
+} from 'react-native';
 import {
   AppColors,
   responsiveFontSize,
@@ -15,10 +21,32 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppButton from '../../../components/AppButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { removeFromWishList } from '../../../GlobalFunctions';
 
-const HomeDetails = () => {
+const HomeDetails = ({ navigation, route }) => {
+  const { availability, description, image, price, productLink, title, userId, _id } =
+    route?.params?.data;
+  console.log('link', productLink);
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const removeWishlistHandler = async () => {
+    setIsLoading(true);
+    try {
+      await removeFromWishList(_id, navigation, true);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: AppColors.WHITE }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: AppColors.WHITE,
+        paddingBottom: responsiveHeight(2),
+      }}
+    >
       <AppHeader onBackPress={true} heading={'Product Details'} />
       <View
         style={{
@@ -28,10 +56,12 @@ const HomeDetails = () => {
         }}
       >
         <Image
-          source={AppImages.product2}
+          source={{ uri: image }}
           style={{
             width: responsiveWidth(92),
             height: responsiveHeight(25),
+            borderWidth: 1.5,
+            borderColor: '#DFDFDF',
             borderRadius: 10,
           }}
         />
@@ -39,20 +69,17 @@ const HomeDetails = () => {
           style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            // alignItems: 'center',
           }}
         >
           <AppText
-            title={'Product Name: '}
+            title={'Product Title: '}
             textColor={AppColors.BLACK}
             textSize={2}
+            textwidth={67}
             textFontWeight
           >
-            <AppText
-              title={'iPhone 14 Pro'}
-              textColor={AppColors.GRAY}
-              textSize={2}
-            />
+            <AppText title={title} textColor={AppColors.GRAY} textSize={2} />
           </AppText>
 
           <View
@@ -60,11 +87,15 @@ const HomeDetails = () => {
               backgroundColor: AppColors.lightGreen,
               paddingHorizontal: responsiveWidth(2.5),
               paddingVertical: responsiveHeight(0.5),
+              height: responsiveHeight(3.5),
+              justifyContent: 'center',
+              marginTop: responsiveHeight(0.5),
+              alignItems: 'center',
               borderRadius: 5,
             }}
           >
             <AppText
-              title={'In Stock'}
+              title={availability}
               textColor={AppColors.WHITE}
               textSize={1.5}
               textFontWeight
@@ -78,7 +109,8 @@ const HomeDetails = () => {
           textFontWeight
         >
           <AppText
-            title={'https/loremipsumsimplydummy.com'}
+            onPress={() => Linking.openURL(productLink)}
+            title={productLink}
             textColor={AppColors.LIGHT_BLUE}
             textSize={1.6}
           />
@@ -89,15 +121,15 @@ const HomeDetails = () => {
           textSize={2}
           textFontWeight
         >
-          <AppText title={'$ 890.00'} textColor={AppColors.GRAY} textSize={1.6}>
-            {' '}
+          <AppText title={price} textColor={AppColors.GRAY} textSize={1.6} />
+          {/* {' '}
             <AppText
               title={'($920.00)'}
               textColor={AppColors.GRAY}
               textSize={1.6}
               textDecorationLine={'line-through'}
             />
-          </AppText>
+          </AppText> */}
         </AppText>
 
         <AppText
@@ -106,7 +138,7 @@ const HomeDetails = () => {
           textSize={1.6}
         />
 
-        <AppTextInput
+        {/* <AppTextInput
           inputPlaceHolder={'High Priority (Always notify instantly)'}
           containerBg={AppColors.WHITE}
           borderWidth={1}
@@ -129,18 +161,31 @@ const HomeDetails = () => {
               />
             </TouchableOpacity>
           }
-        />
+        /> */}
       </View>
-
-      <View style={{ flex: 1, justifyContent: 'flex-end', paddingHorizontal: responsiveWidth(4) }}>
-        <AppButton
-          title="Remove To Wishlist"
-          textColor={AppColors.WHITE}
-          btnBackgroundColor={AppColors.themeColor}
-          //   handlePress={}
-          textFontWeight={false}
-        />
-      </View>
+      {availability !== 'New Item' && (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            paddingHorizontal: responsiveWidth(4),
+          }}
+        >
+          <AppButton
+            title={
+              isLoading ? (
+                <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+              ) : (
+                'Remove From Wishlist'
+              )
+            }
+            textColor={AppColors.WHITE}
+            btnBackgroundColor={AppColors.themeColor}
+            handlePress={removeWishlistHandler}
+            textFontWeight={false}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 };

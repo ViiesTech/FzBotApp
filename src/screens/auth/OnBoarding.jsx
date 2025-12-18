@@ -34,7 +34,8 @@ const OnBoarding = ({ navigation }) => {
     {
       key: 3,
       title: 'Save time. Shop at the right moment.',
-      detail: 'Manage all your tracked items from a single, simple dashboard. Stay informed, stay ready, and grab the deal before it’s gone.',
+      detail:
+        'Manage all your tracked items from a single, simple dashboard. Stay informed, stay ready, and grab the deal before it’s gone.',
       bg: AppImages.onboarding3,
     },
   ];
@@ -79,7 +80,7 @@ const OnBoarding = ({ navigation }) => {
           title="Skip"
           textColor={AppColors.WHITE}
           btnBackgroundColor={AppColors.BTNCOLOURS}
-          handlePress={currentIndex === 2 ? handleDone : handleNext}
+          handlePress={handleDone}
           textFontWeight={false}
           btnWidth={18}
           borderRadius={10}

@@ -5,4 +5,5 @@ export const AppImages = {
     onboarding3: require('./onboarding3.png'),
     product: require('./product1.png'),
     product2: require('./product2.jpg'),
+    userDummy: require('./userDummy.png'),
 };

@@ -20,6 +20,7 @@ type textProps = {
     borderBottomColor?: any;
     borderBottomWidth?: any;
     paddingBottom?: any;
+    onPress?: () => void;
     textTransform?: any;
     children?: React.ReactNode;
     textDecorationLine?: any;
@@ -42,16 +43,18 @@ const AppText = ({
     children,
     textDecorationLine,
     paddingHorizontal,
+    onPress,
 }: textProps) => {
     return (
         <Text
+            onPress={onPress}
             numberOfLines={numberOfLines}
             style={{
                 width: textwidth ? responsiveWidth(textwidth) : null,
                 fontSize: textSize
                     ? responsiveFontSize(textSize)
                     : responsiveFontSize(1.4),
-                fontWeight: textFontWeight ? 'bold' : 'regular',
+                fontWeight: textFontWeight ? textFontWeight : 'regular',
                 color: textColor ? textColor : AppColors.BLACK,
                 textAlign: textAlignment ? textAlignment : null,
                 alignSelf: textAlignment ? textAlignment : null,

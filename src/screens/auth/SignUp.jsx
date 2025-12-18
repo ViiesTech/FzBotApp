@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/self-closing-comp */
-import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import Container from '../../components/Container';
 import {
   AppColors,
@@ -21,6 +21,8 @@ import Foundation from 'react-native-vector-icons/Foundation';
 import AppText from '../../components/AppTextComps/AppText';
 import SVGXml from '../../components/SVGXML';
 import { AppIcons } from '../../assets/icons';
+import { getFcmToken, ShowToast, Signup } from '../../GlobalFunctions';
+import { useDispatch } from 'react-redux';
 
 const SignUp = () => {
   const [isNameFocused, setIsNameFocused] = useState(false);
@@ -28,9 +30,50 @@ const SignUp = () => {
   const [isPhoneNumberFocused, setIsPhoneNumberFocused] = useState(false);
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const nav = useNavigation();
+  const dispatch = useDispatch();
   const [isShow, setIsShow] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fcmToken, setFcmToken] = useState();
 
+  const [form, setForm] = useState({
+    userName: '',
+    email: null,
+    phone: null,
+    password: null,
+  });
+  const getFcmTokenHandler = async () => {
+    const response = await getFcmToken();
+    setFcmToken(response);
+  };
+  useEffect(() => {
+    getFcmTokenHandler();
+  }, []);
+  const handleInputChange = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+  const handleRegisteration = async () => {
+    const { userName, email, phone, password } = form;
+    if (!userName) {
+      return ShowToast('error', 'User Name is required.');
+    } else if (!email) {
+      return ShowToast('error', 'Email Name is required.');
+    } else if (!phone) {
+      return ShowToast('error', 'Phone Number is required');
+    } else if (!password) {
+      return ShowToast('error', 'Password is required');
+    } else if (!fcmToken) {
+      return ShowToast('error', 'Couldnt Find FCM Token');
+    } else {
+      setIsLoading(true);
+      try {
+        await Signup(userName, email, phone, password, fcmToken, dispatch);
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+      }
+    }
+  };
   return (
     <Container>
       <View
@@ -47,6 +90,7 @@ const SignUp = () => {
         <LineBreak space={7} />
 
         <AppTextInput
+          onChangeText={value => handleInputChange('userName', value)}
           inputPlaceHolder={'Name'}
           logo={
             <Ionicons
@@ -65,11 +109,14 @@ const SignUp = () => {
 
         <AppTextInput
           inputPlaceHolder={'Email address'}
+          onChangeText={value => handleInputChange('email', value)}
           logo={
             <MaterialIcons
               name={'email'}
               size={responsiveFontSize(2.5)}
-              color={isEmailFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
+              color={
+                isEmailFocused ? AppColors.themeColor : AppColors.LIGHTGRAY
+              }
             />
           }
           inputHeight={5}
@@ -82,12 +129,15 @@ const SignUp = () => {
 
         <AppTextInput
           inputPlaceHolder={'Mobile Number'}
+          onChangeText={value => handleInputChange('phone', value)}
           logo={
             <Octicons
               name={'number'}
               size={responsiveFontSize(2.5)}
               color={
-                isPhoneNumberFocused ? AppColors.themeColor : AppColors.LIGHTGRAY
+                isPhoneNumberFocused
+                  ? AppColors.themeColor
+                  : AppColors.LIGHTGRAY
               }
             />
           }
@@ -101,6 +151,7 @@ const SignUp = () => {
 
         <AppTextInput
           inputPlaceHolder={'Password'}
+          onChangeText={value => handleInputChange('password', value)}
           inputHeight={5}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
@@ -148,10 +199,16 @@ const SignUp = () => {
         <LineBreak space={2} />
 
         <AppButton
-          title="Join Now"
+          title={
+            isLoading ? (
+              <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+            ) : (
+              'Join Now'
+            )
+          }
           textColor={AppColors.WHITE}
           btnBackgroundColor={AppColors.themeColor}
-        //   handlePress={}
+          handlePress={handleRegisteration}
           textFontWeight={false}
         />
 

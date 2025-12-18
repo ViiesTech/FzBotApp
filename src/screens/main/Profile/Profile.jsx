@@ -14,6 +14,9 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import SettingsMenu from '../../../components/SettingsMenu';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearToken } from '../../../redux/Slices';
+import { BaseUrl } from '../../../assets/BaseUrl';
 
 const data2 = [
   {
@@ -34,19 +37,25 @@ const data2 = [
     title: 'Change password',
     navTo: 'ChangePassword',
     left: <Foundation name="key" size={25} color={AppColors.BLACK} />,
-    right: <Feather name="chevron-right" size={25} color={AppColors.themeColor} />,
+    right: (
+      <Feather name="chevron-right" size={25} color={AppColors.themeColor} />
+    ),
   },
   {
     id: 4,
     title: 'Privacy Policy',
     left: <AntDesign name="lock" size={25} color={AppColors.BLACK} />,
-    right: <Feather name="chevron-right" size={25} color={AppColors.themeColor} />,
+    right: (
+      <Feather name="chevron-right" size={25} color={AppColors.themeColor} />
+    ),
   },
   {
     id: 5,
     title: 'Help & Support',
     left: <Feather name="alert-circle" size={25} color={AppColors.BLACK} />,
-    right: <Feather name="chevron-right" size={25} color={AppColors.themeColor} />,
+    right: (
+      <Feather name="chevron-right" size={25} color={AppColors.themeColor} />
+    ),
   },
   {
     id: 6,
@@ -57,28 +66,27 @@ const data2 = [
 ];
 
 const Profile = () => {
-    const nav = useNavigation();
+  const nav = useNavigation();
+  const dispatch = useDispatch();
+  const { name, email, image } = useSelector(state => state?.user?.userData);
+
   return (
     <Container>
       <AppHeader heading={'Profile'} />
       <View style={{ paddingHorizontal: responsiveWidth(4) }}>
         <View style={{ alignItems: 'center' }}>
           <Image
-            source={AppImages.product2}
+            source={image ? { uri: `${BaseUrl}${image}` } : AppImages.userDummy}
             style={{ width: 80, height: 80, borderRadius: 100 }}
           />
           <LineBreak space={1} />
           <AppText
-            title={'Samantha Wilson'}
+            title={name}
             textColor={AppColors.BLACK}
             textSize={2}
             textFontWeight
           />
-          <AppText
-            title={'samanthawilson@gmail.com'}
-            textColor={AppColors.GRAY}
-            textSize={2}
-          />
+          <AppText title={email} textColor={AppColors.GRAY} textSize={2} />
           <LineBreak space={2} />
           <AppButton
             title="Edit Profile"
@@ -104,8 +112,10 @@ const Profile = () => {
               profile={'profile'}
               leftIcon={item.left}
               cardOnPress={() => {
-                if(item.navTo){
-                    nav.navigate(item.navTo);
+                if (item.id === 6) {
+                  dispatch(clearToken());
+                } else if (item.navTo) {
+                  nav.navigate(item.navTo);
                 }
               }}
             />

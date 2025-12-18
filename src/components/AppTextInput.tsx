@@ -85,7 +85,7 @@ const AppTextInput = ({
         borderColor: isFocused
           ? AppColors.themeColor
           : borderColor || AppColors.WHITE,
-          elevation: elevation,
+        elevation: elevation,
       }}>
       {logo}
 

@@ -22,18 +22,28 @@ const data1 = [
     id: 2,
     title: 'Instant Alerts',
     right: (
-      <FontAwesome5 name="toggle-on" size={25} color={AppColors.themeColor} />
+      <TouchableOpacity>
+        <FontAwesome5 name="toggle-on" size={25} color={AppColors.themeColor} />
+      </TouchableOpacity>
     ),
   },
   {
     id: 3,
     title: 'Daily Digest',
-    right: <FontAwesome5 name="toggle-off" size={25} color={AppColors.GRAY} />,
+    right: (
+      <TouchableOpacity>
+        <FontAwesome5 name="toggle-off" size={25} color={AppColors.GRAY} />,
+      </TouchableOpacity>
+    ),
   },
   {
     id: 4,
     title: 'Priority Alerts Only',
-    right: <FontAwesome5 name="toggle-off" size={25} color={AppColors.GRAY} />,
+    right: (
+      <TouchableOpacity>
+        <FontAwesome5 name="toggle-off" size={25} color={AppColors.GRAY} />,
+      </TouchableOpacity>
+    ),
   },
 ];
 
@@ -54,21 +64,30 @@ const data2 = [
     id: 2,
     title: 'Clear Watchlist',
     right: (
-      <MaterialIcons name="delete" size={25} color={AppColors.themeColor} />
+      <TouchableOpacity>
+        <MaterialIcons name="delete" size={25} color={AppColors.themeColor} />
+      </TouchableOpacity>
     ),
   },
   {
     id: 3,
     title: 'Export URLs',
-    right: <AntDesign name="export" size={25} color={AppColors.themeColor} />,
+    right: (
+      <TouchableOpacity>
+        <AntDesign name="export" size={25} color={AppColors.themeColor} />,
+      </TouchableOpacity>
+    ),
   },
   {
     id: 4,
     title: 'Import URLs',
-    right: <Feather name="download" size={25} color={AppColors.themeColor} />,
+    right: (
+      <TouchableOpacity>
+        <Feather name="download" size={25} color={AppColors.themeColor} />,
+      </TouchableOpacity>
+    ),
   },
 ];
-
 
 const AppSettings = () => {
   return (
@@ -120,7 +139,7 @@ const AppSettings = () => {
               }}
             >
               <Fontisto
-                name={item.id == 1 ? "radio-btn-active" : "radio-btn-passive"}
+                name={item.id == 1 ? 'radio-btn-active' : 'radio-btn-passive'}
                 size={10}
                 color={item.id == 1 ? AppColors.WHITE : AppColors.themeColor}
               />

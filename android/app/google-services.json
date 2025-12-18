@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "840928261367",
+    "project_id": "fzbot-59062",
+    "storage_bucket": "fzbot-59062.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840928261367:android:f87424a23f11daf36c4ff2",
+        "android_client_info": {
+          "package_name": "com.fzbotapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNJ4Ln55GC6bF0t7PD2MHsJWg2NqUY3Cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

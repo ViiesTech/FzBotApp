@@ -50,14 +50,14 @@ function MyTabs() {
           display: 'none',
         },
         tabBarStyle: {
-          height: responsiveHeight(10),
+          height: responsiveHeight(7.5),
           backgroundColor: AppColors.themeColor,
           paddingTop: responsiveHeight(1),
         },
       }}
     >
       <Tab.Screen
-        name={"Home"}
+        name={'Home'}
         component={Home}
         options={{
           tabBarIcon: ({ focused }) =>
@@ -86,11 +86,7 @@ function MyTabs() {
           tabBarIcon: ({ focused }) =>
             focused ? (
               <View style={{ alignItems: 'center' }}>
-                <FontAwesome
-                  size={22}
-                  name={'bell'}
-                  color={AppColors.WHITE}
-                />
+                <FontAwesome size={22} name={'bell'} color={AppColors.WHITE} />
                 <LineBreak space={0.5} />
                 <View
                   style={{
@@ -129,7 +125,11 @@ function MyTabs() {
                 />
               </View>
             ) : (
-              <Fontisto size={22} name={'player-settings'} color={AppColors.GRAY} />
+              <Fontisto
+                size={22}
+                name={'player-settings'}
+                color={AppColors.GRAY}
+              />
             ),
         }}
       />

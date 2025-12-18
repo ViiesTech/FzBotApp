@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import Container from '../../components/Container';
 import AuthHeader from '../../components/AuthHeader';
 import {
@@ -19,14 +19,42 @@ import AppButton from '../../components/AppButton';
 import SVGXml from '../../components/SVGXML.tsx';
 import { useNavigation } from '@react-navigation/native';
 import { AppIcons } from '../../assets/icons/index.tsx';
+import {
+  getFcmToken,
+  LoginIntegration,
+  ShowToast,
+} from '../../GlobalFunctions/index.tsx';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Login = () => {
   const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
   const [isShow, setIsShow] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const nav = useNavigation();
-
+  const dispatch = useDispatch();
+  const { isLoading } = useSelector(state => state?.user);
+  const [fcmToken, setFcmToken] = useState();
+  console.log('fcmtoken', fcmToken);
+  const getFcmTokenHandler = async () => {
+    const response = await getFcmToken();
+    setFcmToken(response);
+  };
+  useEffect(() => {
+    getFcmTokenHandler();
+  }, []);
+  const loginHandler = async () => {
+    if (!email) {
+      return ShowToast('error', 'Email Is Required');
+    } else if (!password) {
+      return ShowToast('error', 'Password Is Required');
+    } else if (!fcmToken) {
+      return ShowToast('error', 'Couldnt Find FCM Token');
+    } else {
+      await LoginIntegration(email, password, fcmToken, dispatch);
+    }
+  };
   return (
     <Container>
       <View
@@ -48,7 +76,9 @@ const Login = () => {
             <MaterialIcons
               name={'email'}
               size={responsiveFontSize(2.5)}
-              color={isEmailFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
+              color={
+                isEmailFocused ? AppColors.themeColor : AppColors.LIGHTGRAY
+              }
             />
           }
           inputHeight={5}
@@ -63,6 +93,7 @@ const Login = () => {
 
         <AppTextInput
           inputPlaceHolder={'Password'}
+          onChangeText={text => setPassword(text)}
           inputHeight={5}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
@@ -103,10 +134,16 @@ const Login = () => {
         <LineBreak space={15} />
 
         <AppButton
-          title="Login"
+          title={
+            isLoading ? (
+              <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+            ) : (
+              'Login'
+            )
+          }
           textColor={AppColors.WHITE}
           btnBackgroundColor={AppColors.themeColor}
-          handlePress={() => nav.navigate('Main')}
+          handlePress={loginHandler}
           textFontWeight={false}
         />
 
