@@ -29,8 +29,6 @@ export const UserLogin = createAsyncThunk<LoginResponse, AxiosRequestConfig>(
       const response = await axios.request<LoginResponse>(config);
       const resData = response.data;
 
-      console.log('Login Response ===>', JSON.stringify(resData));
-
       if (resData.success) {
         if (resData.accessToken && resData.data) {
           ShowToast('success', 'Login Successful');
@@ -44,7 +42,6 @@ export const UserLogin = createAsyncThunk<LoginResponse, AxiosRequestConfig>(
         return rejectWithValue('Login failed');
       }
     } catch (error: any) {
-      console.log('Login Error:', error.response?.data?.message || error.message);
       ShowToast('error', error.response?.data?.message || 'Something went wrong');
       return rejectWithValue('Something went wrong');
     }
@@ -78,12 +75,9 @@ const authSlice = createSlice({
         if (action.payload.accessToken && action.payload.data) {
           state.token = action.payload.accessToken;
           state.userData = action.payload.data;
-          console.log('Login success — token & userData set');
         } else {
-          // No token means OTP login initiated — no Redux update needed yet
-          console.log('Phone login flow — waiting for OTP verification');
+          // No token — waiting for verification
         }
-        console.log('action.payload<<<<=====', action.payload);
       })
       .addCase(UserLogin.rejected, (state, action) => {
         state.isLoading = false;

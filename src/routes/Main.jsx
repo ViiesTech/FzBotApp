@@ -19,6 +19,7 @@ import AppSettings from './../screens/main/AppSettings/AppSettings';
 import Profile from './../screens/main/Profile/Profile';
 import ChangePassword from './../screens/main/Profile/ChangePassword';
 import EditProfile from './../screens/main/Profile/EditProfile';
+import PersonalInformation from './../screens/main/Profile/PersonalInformation';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -34,6 +35,7 @@ const Main = () => {
       <Stack.Screen name="HomeDetails" component={HomeDetails} />
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="ChangePassword" component={ChangePassword} />
+      <Stack.Screen name="PersonalInformation" component={PersonalInformation} />
     </Stack.Navigator>
   );
 };

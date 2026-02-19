@@ -6,7 +6,7 @@ import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from
 
 const CELL_COUNT = 4;
 
-const FieldCode = () => {
+const FieldCode = ({ onCodeChange }: { onCodeChange?: (code: string) => void }) => {
     const [value, setValue] = useState('');
     const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -14,13 +14,18 @@ const FieldCode = () => {
         setValue,
     });
 
+    const handleChange = (text: string) => {
+        setValue(text);
+        onCodeChange?.(text);
+    };
+
     return (
         <View style={styles.container}>
             <CodeField
                 ref={ref}
                 {...props}
                 value={value}
-                onChangeText={setValue}
+                onChangeText={handleChange}
                 cellCount={CELL_COUNT}
                 rootStyle={styles.codeFieldRoot}
                 keyboardType="number-pad"

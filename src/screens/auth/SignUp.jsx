@@ -12,7 +12,6 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AuthHeader from '../../components/AuthHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Octicons from 'react-native-vector-icons/Octicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LineBreak from '../../components/LineBreak';
 import AppTextInput from '../../components/AppTextInput';
@@ -23,12 +22,11 @@ import SVGXml from '../../components/SVGXML';
 import { AppIcons } from '../../assets/icons';
 import { getFcmToken, ShowToast, Signup } from '../../GlobalFunctions';
 import { useDispatch } from 'react-redux';
+import BackIcon from '../../components/AppTextComps/BackIcon';
 
 const SignUp = () => {
   const [isNameFocused, setIsNameFocused] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
-  const [isPhoneNumberFocused, setIsPhoneNumberFocused] = useState(false);
-  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const nav = useNavigation();
   const dispatch = useDispatch();
   const [isShow, setIsShow] = useState(false);
@@ -39,7 +37,6 @@ const SignUp = () => {
   const [form, setForm] = useState({
     userName: '',
     email: null,
-    phone: null,
     password: null,
   });
   const getFcmTokenHandler = async () => {
@@ -53,21 +50,17 @@ const SignUp = () => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
   const handleRegisteration = async () => {
-    const { userName, email, phone, password } = form;
+    const { userName, email, password } = form;
     if (!userName) {
       return ShowToast('error', 'User Name is required.');
     } else if (!email) {
-      return ShowToast('error', 'Email Name is required.');
-    } else if (!phone) {
-      return ShowToast('error', 'Phone Number is required');
+      return ShowToast('error', 'Email is required.');
     } else if (!password) {
       return ShowToast('error', 'Password is required');
-    } else if (!fcmToken) {
-      return ShowToast('error', 'Couldnt Find FCM Token');
     } else {
       setIsLoading(true);
       try {
-        await Signup(userName, email, phone, password, fcmToken, dispatch);
+        await Signup(userName, email, password, fcmToken || 'simulator-no-token', dispatch);
         setIsLoading(false);
       } catch (error) {
         setIsLoading(false);
@@ -82,6 +75,10 @@ const SignUp = () => {
           paddingVertical: responsiveHeight(2),
         }}
       >
+        <BackIcon onBackPress={() => nav.goBack()} />
+
+        <LineBreak space={2} />
+
         <AuthHeader
           heading="Create an account,"
           subHeading="Enter your full details below to get started."
@@ -120,6 +117,9 @@ const SignUp = () => {
             />
           }
           inputHeight={5}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
           isFocused={isEmailFocused}
           onFocus={() => setIsEmailFocused(true)}
           onBlur={() => setIsEmailFocused(false)}
@@ -128,30 +128,11 @@ const SignUp = () => {
         <LineBreak space={2} />
 
         <AppTextInput
-          inputPlaceHolder={'Mobile Number'}
-          onChangeText={value => handleInputChange('phone', value)}
-          logo={
-            <Octicons
-              name={'number'}
-              size={responsiveFontSize(2.5)}
-              color={
-                isPhoneNumberFocused
-                  ? AppColors.themeColor
-                  : AppColors.LIGHTGRAY
-              }
-            />
-          }
-          inputHeight={5}
-          isFocused={isPhoneNumberFocused}
-          onFocus={() => setIsPhoneNumberFocused(true)}
-          onBlur={() => setIsPhoneNumberFocused(false)}
-        />
-
-        <LineBreak space={2} />
-
-        <AppTextInput
           inputPlaceHolder={'Password'}
           onChangeText={value => handleInputChange('password', value)}
+          secureTextEntry={!isShow}
+          autoCapitalize="none"
+          autoCorrect={false}
           inputHeight={5}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
@@ -180,24 +161,6 @@ const SignUp = () => {
 
         <LineBreak space={2} />
 
-        <View>
-          <AppText textColor={AppColors.GRAY} textSize={1.8}>
-            By signing up you agree to our{' '}
-            <AppText
-              textColor={AppColors.themeColor}
-              textFontWeight
-              textSize={1.8}
-            >
-              Term of use and privacy
-            </AppText>{' '}
-            <AppText textColor={AppColors.GRAY} textSize={1.8}>
-              notice
-            </AppText>
-          </AppText>
-        </View>
-
-        <LineBreak space={2} />
-
         <AppButton
           title={
             isLoading ? (
@@ -210,53 +173,6 @@ const SignUp = () => {
           btnBackgroundColor={AppColors.themeColor}
           handlePress={handleRegisteration}
           textFontWeight={false}
-        />
-
-        <LineBreak space={2} />
-
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: responsiveWidth(5),
-            alignItems: 'center',
-          }}
-        >
-          <View
-            style={{
-              width: responsiveWidth(38),
-              height: responsiveHeight(0.2),
-              backgroundColor: AppColors.LIGHTGRAY,
-            }}
-          />
-          <AppText
-            title={'or'}
-            textColor={AppColors.GRAY}
-            textSize={1.8}
-            textFontWeight
-          />
-          <View
-            style={{
-              width: responsiveWidth(38),
-              height: responsiveHeight(0.2),
-              backgroundColor: AppColors.LIGHTGRAY,
-            }}
-          />
-        </View>
-        <LineBreak space={2} />
-
-        <AppButton
-          title="Join with Google"
-          textColor={AppColors.BLACK}
-          borderWidth={2}
-          borderColor={AppColors.themeColor}
-          btnBackgroundColor={AppColors.WHITE}
-          handlePress={() => {}}
-          leftIcon={
-            <View style={{ paddingHorizontal: responsiveWidth(4) }}>
-              <SVGXml icon={AppIcons.google} width={20} height={20} />
-            </View>
-          }
         />
 
         <LineBreak space={3} />

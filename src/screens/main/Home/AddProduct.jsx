@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import Container from '../../../components/Container';
 import AppHeader from '../../../components/AppHeader';
 import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
@@ -16,6 +16,7 @@ import {
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import { useSelector } from 'react-redux';
 import { FetchProductLoader } from '../../../components/AppTextComps/HomeLoader';
+import LazyImage from '../../../components/LazyImage';
 
 const AddProduct = ({ navigation }) => {
   const [value, setValue] = useState();
@@ -23,20 +24,23 @@ const AddProduct = ({ navigation }) => {
   const [wishListLoading, setWishListLoading] = useState(false);
   const { userData } = useSelector(state => state?.user);
   const [data, setData] = useState();
-  console.log('userData', userData);
   const fetchDetailsHandler = async () => {
     if (!value) {
       return ShowToast('error', 'Url Is Required.');
     }
     setIsLoading(true);
+    setData(undefined);
     try {
       const response = await fetchDetails(value);
-      setData(response);
-      setIsLoading(false);
-      console.log('response', response);
+      if (response) {
+        setData(response);
+      } else {
+        ShowToast('error', 'Could not fetch product details. The website may be blocking automated access.');
+      }
     } catch (error) {
+      ShowToast('error', 'Failed to fetch details. Please check the URL and try again.');
+    } finally {
       setIsLoading(false);
-      console.log('error', error);
     }
   };
 
@@ -75,6 +79,9 @@ const AddProduct = ({ navigation }) => {
             inputPlaceHolder={'Search...'}
             onChangeText={text => setValue(text)}
             inputHeight={5}
+            keyboardType="url"
+            autoCapitalize="none"
+            autoCorrect={false}
             containerBg={AppColors.WHITE}
             borderWidth={1}
             value={value}
@@ -85,10 +92,11 @@ const AddProduct = ({ navigation }) => {
             rightIcon={
               <View>
                 <AppButton
-                  title="Fetch Details"
+                  title={isLoading ? 'Fetching...' : 'Fetch Details'}
                   textColor={AppColors.WHITE}
                   btnBackgroundColor={AppColors.BTNCOLOURS}
                   handlePress={fetchDetailsHandler}
+                  disabled={isLoading}
                   textFontWeight={true}
                   btnWidth={30}
                   btnPadding={15}
@@ -117,7 +125,7 @@ const AddProduct = ({ navigation }) => {
             // 🔹 Actual product details or placeholders
             <>
               {data?.image ? (
-                <Image
+                <LazyImage
                   source={{ uri: data?.image }}
                   // resizeMode='stretch'
                   style={{
@@ -255,6 +263,7 @@ const AddProduct = ({ navigation }) => {
           textColor={AppColors.WHITE}
           btnBackgroundColor={AppColors.themeColor}
           handlePress={AddToWishlistHandler}
+          disabled={wishListLoading || !data}
           textFontWeight={false}
         />
       </View>

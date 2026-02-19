@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import {
   View,
-  Image,
   TouchableOpacity,
   Linking,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import {
   AppColors,
@@ -13,6 +13,7 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
+import LazyImage from '../../../components/LazyImage';
 import AppHeader from '../../../components/AppHeader';
 import { AppImages } from '../../../assets/images';
 import AppText from '../../../components/AppTextComps/AppText';
@@ -24,9 +25,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { removeFromWishList } from '../../../GlobalFunctions';
 
 const HomeDetails = ({ navigation, route }) => {
-  const { availability, description, image, price, productLink, title, userId, _id } =
-    route?.params?.data;
-  console.log('link', productLink);
+  const productData = route?.params?.data || {};
+  const { availability = '', description = '', image = '', price = '', productLink = '', title = 'Product', userId = '', _id = '' } = productData;
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,14 +48,18 @@ const HomeDetails = ({ navigation, route }) => {
       }}
     >
       <AppHeader onBackPress={true} heading={'Product Details'} />
-      <View
-        style={{
-          paddingHorizontal: responsiveWidth(4),
-          gap: responsiveHeight(2),
-          flex: 1,
-        }}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: responsiveHeight(4) }}
+        showsVerticalScrollIndicator={false}
       >
-        <Image
+        <View
+          style={{
+            paddingHorizontal: responsiveWidth(4),
+            gap: responsiveHeight(2),
+          }}
+        >
+          <LazyImage
           source={{ uri: image }}
           style={{
             width: responsiveWidth(92),
@@ -84,7 +88,9 @@ const HomeDetails = ({ navigation, route }) => {
 
           <View
             style={{
-              backgroundColor: AppColors.lightGreen,
+              backgroundColor: (!availability || !availability.toLowerCase().includes('out'))
+                ? AppColors.lightGreen
+                : AppColors.RED_COLOR,
               paddingHorizontal: responsiveWidth(2.5),
               paddingVertical: responsiveHeight(0.5),
               height: responsiveHeight(3.5),
@@ -95,7 +101,7 @@ const HomeDetails = ({ navigation, route }) => {
             }}
           >
             <AppText
-              title={availability}
+              title={(!availability || availability === 'In Stock' || !availability.toLowerCase().includes('out')) ? 'In Stock' : 'Out of Stock'}
               textColor={AppColors.WHITE}
               textSize={1.5}
               textFontWeight
@@ -162,30 +168,30 @@ const HomeDetails = ({ navigation, route }) => {
             </TouchableOpacity>
           }
         /> */}
-      </View>
-      {availability !== 'New Item' && (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'flex-end',
-            paddingHorizontal: responsiveWidth(4),
-          }}
-        >
-          <AppButton
-            title={
-              isLoading ? (
-                <ActivityIndicator size={'large'} color={AppColors.WHITE} />
-              ) : (
-                'Remove From Wishlist'
-              )
-            }
-            textColor={AppColors.WHITE}
-            btnBackgroundColor={AppColors.themeColor}
-            handlePress={removeWishlistHandler}
-            textFontWeight={false}
-          />
         </View>
-      )}
+        {availability !== 'New Item' && (
+          <View
+            style={{
+              paddingHorizontal: responsiveWidth(4),
+              paddingTop: responsiveHeight(3),
+            }}
+          >
+            <AppButton
+              title={
+                isLoading ? (
+                  <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+                ) : (
+                  'Remove From Wishlist'
+                )
+              }
+              textColor={AppColors.WHITE}
+              btnBackgroundColor={AppColors.themeColor}
+              handlePress={removeWishlistHandler}
+              textFontWeight={false}
+            />
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };

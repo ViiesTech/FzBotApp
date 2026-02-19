@@ -18,7 +18,7 @@ async function requestUserPermission() {
     authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
   if (enabled) {
-    console.log('Notification permission granted.');
+    // Permission granted
   }
 }
 
@@ -29,8 +29,6 @@ export function setupNotificationListeners() {
 
   // Foreground notifications
   return messaging().onMessage(async remoteMessage => {
-    console.log('📩 FCM Message:', remoteMessage);
-
     await notifee.displayNotification({
       title: remoteMessage?.notification?.title,
       body: remoteMessage?.notification?.body,

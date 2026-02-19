@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { FlatList, Image, View } from 'react-native';
+import { Alert, FlatList, View } from 'react-native';
 import { AppColors, responsiveWidth } from '../../../utils';
 import Container from '../../../components/Container';
 import AppHeader from '../../../components/AppHeader';
@@ -8,7 +8,6 @@ import AppText from '../../../components/AppTextComps/AppText';
 import { AppImages } from '../../../assets/images';
 import LineBreak from '../../../components/LineBreak';
 import AppButton from '../../../components/AppButton';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import Foundation from 'react-native-vector-icons/Foundation';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -17,6 +16,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearToken } from '../../../redux/Slices';
 import { BaseUrl } from '../../../assets/BaseUrl';
+import { logoutUser } from '../../../GlobalFunctions';
+import LazyImage from '../../../components/LazyImage';
 
 const data2 = [
   {
@@ -26,7 +27,7 @@ const data2 = [
   {
     id: 2,
     title: 'Personal information',
-    navTo: 'EditProfile',
+    navTo: 'PersonalInformation',
     left: <Feather name="user" size={25} color={AppColors.BLACK} />,
     right: (
       <Feather name="chevron-right" size={25} color={AppColors.themeColor} />
@@ -43,22 +44,6 @@ const data2 = [
   },
   {
     id: 4,
-    title: 'Privacy Policy',
-    left: <AntDesign name="lock" size={25} color={AppColors.BLACK} />,
-    right: (
-      <Feather name="chevron-right" size={25} color={AppColors.themeColor} />
-    ),
-  },
-  {
-    id: 5,
-    title: 'Help & Support',
-    left: <Feather name="alert-circle" size={25} color={AppColors.BLACK} />,
-    right: (
-      <Feather name="chevron-right" size={25} color={AppColors.themeColor} />
-    ),
-  },
-  {
-    id: 6,
     title: 'Log Out',
     navTo: 'Auth',
     left: <MaterialIcons name="logout" size={25} color={AppColors.RED_COLOR} />,
@@ -68,15 +53,24 @@ const data2 = [
 const Profile = () => {
   const nav = useNavigation();
   const dispatch = useDispatch();
-  const { name, email, image } = useSelector(state => state?.user?.userData);
+  const userData = useSelector(state => state?.user?.userData || {});
+  const { name, email, profileImage } = userData;
+
+  const getImageSource = () => {
+    if (profileImage) {
+      const baseWithoutApi = BaseUrl.replace('/api/', '/');
+      return { uri: `${baseWithoutApi}${profileImage}` };
+    }
+    return AppImages.userDummy;
+  };
 
   return (
     <Container>
       <AppHeader heading={'Profile'} />
       <View style={{ paddingHorizontal: responsiveWidth(4) }}>
         <View style={{ alignItems: 'center' }}>
-          <Image
-            source={image ? { uri: `${BaseUrl}${image}` } : AppImages.userDummy}
+          <LazyImage
+            source={getImageSource()}
             style={{ width: 80, height: 80, borderRadius: 100 }}
           />
           <LineBreak space={1} />
@@ -112,8 +106,22 @@ const Profile = () => {
               profile={'profile'}
               leftIcon={item.left}
               cardOnPress={() => {
-                if (item.id === 6) {
-                  dispatch(clearToken());
+                if (item.id === 4) {
+                  Alert.alert(
+                    'Log Out',
+                    'Are you sure you want to log out?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Log Out',
+                        style: 'destructive',
+                        onPress: async () => {
+                          await logoutUser(userData?._id);
+                          dispatch(clearToken());
+                        },
+                      },
+                    ]
+                  );
                 } else if (item.navTo) {
                   nav.navigate(item.navTo);
                 }

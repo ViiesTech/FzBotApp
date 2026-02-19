@@ -18,6 +18,7 @@ type props = {
   borderRadius?: any;
   leftIcon?: any;
   activeOpacity?:any;
+  disabled?: boolean;
 };
 const AppButton = ({
   title,
@@ -33,15 +34,18 @@ const AppButton = ({
   textFontWeight = true,
   textSize = 2.2,
   activeOpacity,
+  disabled = false,
 }: props) => {
   return (
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={activeOpacity}
+      disabled={disabled}
       style={{
         backgroundColor: btnBackgroundColor
           ? btnBackgroundColor
           : AppColors.ThemeBlue,
+        opacity: disabled ? 0.5 : 1,
         alignItems: 'center',
         justifyContent: 'center',
         padding: btnPadding ? btnPadding : 14,

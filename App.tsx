@@ -9,6 +9,7 @@ import { store } from './src/redux/Store';
 import { setupNotificationListeners } from './src/assets/Utils/NotificationService';
 import messaging from '@react-native-firebase/messaging';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 const App = () => {
 
@@ -18,9 +19,7 @@ const App = () => {
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Notification permission granted');
-      } else {
-        console.log('Notification permission denied');
+        // Permission granted
       }
     }
   };
@@ -35,6 +34,31 @@ const App = () => {
     };
 
     requestPermissions();
+
+    // Listen for FCM token refreshes and update the server
+    const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (newToken) => {
+      // We can't access redux store here directly, so we store it
+      // The token will be sent to server on next login
+      // For active sessions, we try to update via the store
+      try {
+        const state = store.getState();
+        const userId = state?.user?.userData?._id;
+        if (userId) {
+          const axios = require('axios').default;
+          const { BaseUrl } = require('./src/assets/BaseUrl');
+          await axios.post(`${BaseUrl}user/updateUser`, {
+            userId,
+            FCMToken: newToken,
+          });
+        }
+      } catch (error) {
+        // Silently fail
+      }
+    });
+
+    return () => {
+      unsubscribeTokenRefresh();
+    };
   }, []);
 
   useEffect(() => {
@@ -44,14 +68,15 @@ const App = () => {
   return (
 
     <>
-      <Provider store={store}>
-        <StatusBar barStyle={'dark-content'} />
-        <NavigationContainer>
-          <Routes />
-          <Toast />
-        </NavigationContainer>
-      </Provider>
-
+      <ErrorBoundary>
+        <Provider store={store}>
+          <StatusBar barStyle={'dark-content'} />
+          <NavigationContainer>
+            <Routes />
+            <Toast />
+          </NavigationContainer>
+        </Provider>
+      </ErrorBoundary>
     </>
   );
 };

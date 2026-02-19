@@ -1,166 +1,165 @@
-/* eslint-disable react/self-closing-comp */
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  ImageBackground,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   AppColors,
   responsiveFontSize,
-  responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
 import { AppImages } from '../../../assets/images';
 import Feather from 'react-native-vector-icons/Feather';
+import LazyImage from '../../../components/LazyImage';
 import AppTextInput from '../../../components/AppTextInput';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LineBreak from '../../../components/LineBreak';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Octicons from 'react-native-vector-icons/Octicons';
-import Foundation from 'react-native-vector-icons/Foundation';
 import AppButton from '../../../components/AppButton';
+import { useDispatch, useSelector } from 'react-redux';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { updateUserProfile, ShowToast } from '../../../GlobalFunctions';
+import { BaseUrl } from '../../../assets/BaseUrl';
 
 const EditProfile = () => {
+  const nav = useNavigation();
+  const dispatch = useDispatch();
+  const { userData } = useSelector(state => state?.user);
+
+  const [name, setName] = useState(userData?.name || '');
+  const [selectedImage, setSelectedImage] = useState(null);
   const [isNameFocused, setIsNameFocused] = useState(false);
-  const [isEmailFocused, setIsEmailFocused] = useState(false);
-  const [isPhoneNumberFocused, setIsPhoneNumberFocused] = useState(false);
-  const [isShow, setIsShow] = useState(false);
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Build the display image URI
+  const getImageSource = () => {
+    if (selectedImage) {
+      return { uri: selectedImage };
+    }
+    if (userData?.profileImage) {
+      // profileImage is stored as 'uploads/user/filename.jpg'
+      const baseWithoutApi = BaseUrl.replace('/api/', '/');
+      return { uri: `${baseWithoutApi}${userData.profileImage}` };
+    }
+    return AppImages.userDummy;
+  };
+
+  const pickImage = () => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        maxWidth: 500,
+        maxHeight: 500,
+        quality: 0.8,
+      },
+      response => {
+        if (response.didCancel) {
+          return;
+        }
+        if (response.errorCode) {
+          ShowToast('error', response.errorMessage || 'Image picker error');
+          return;
+        }
+        if (response.assets && response.assets.length > 0) {
+          setSelectedImage(response.assets[0].uri);
+        }
+      },
+    );
+  };
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      return ShowToast('error', 'Name is required');
+    }
+    setIsLoading(true);
+    try {
+      const res = await updateUserProfile(
+        userData?._id,
+        name.trim(),
+        selectedImage || undefined,
+        dispatch,
+      );
+      if (res?.success) {
+        nav.goBack();
+      }
+    } catch (e) {
+      // error handled in global function
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: AppColors.WHITE }}>
       <ScrollView style={{ flex: 1 }}>
         <AppHeader onBackPress={true} heading={'Edit Profile'} />
         <View style={{ paddingHorizontal: responsiveWidth(4) }}>
-          <ImageBackground
-            source={AppImages.product2}
-            imageStyle={{ borderRadius: 100 }}
-            style={{
-              width: 100,
-              height: 100,
-              alignSelf: 'center',
-              position: 'relative',
-            }}
-          >
-            <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: AppColors.themeColor,
-                  width: 30,
-                  height: 30,
-                  borderRadius: 100,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Feather name="edit" size={18} color={AppColors.WHITE} />
-              </TouchableOpacity>
-            </View>
-          </ImageBackground>
+          <View style={{ alignSelf: 'center', position: 'relative' }}>
+            <LazyImage
+              source={getImageSource()}
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 100,
+              }}
+            />
+            <TouchableOpacity
+              onPress={pickImage}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                backgroundColor: AppColors.themeColor,
+                width: 30,
+                height: 30,
+                borderRadius: 100,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Feather name="edit" size={18} color={AppColors.WHITE} />
+            </TouchableOpacity>
+          </View>
 
           <LineBreak space={5} />
 
-          <View style={{ gap: responsiveHeight(2) }}>
-            <AppTextInput
-              inputPlaceHolder={'Name'}
-              logo={
-                <Ionicons
-                  name={'person'}
-                  size={responsiveFontSize(2.5)}
-                  color={
-                    isNameFocused ? AppColors.themeColor : AppColors.LIGHTGRAY
-                  }
-                />
-              }
-              inputHeight={5}
-              isFocused={isNameFocused}
-              onFocus={() => setIsNameFocused(true)}
-              onBlur={() => setIsNameFocused(false)}
-            />
-
-            <AppTextInput
-              inputPlaceHolder={'Email address'}
-              logo={
-                <MaterialIcons
-                  name={'email'}
-                  size={responsiveFontSize(2.5)}
-                  color={
-                    isEmailFocused ? AppColors.themeColor : AppColors.LIGHTGRAY
-                  }
-                />
-              }
-              inputHeight={5}
-              isFocused={isEmailFocused}
-              onFocus={() => setIsEmailFocused(true)}
-              onBlur={() => setIsEmailFocused(false)}
-            />
-
-            <AppTextInput
-              inputPlaceHolder={'Mobile Number'}
-              logo={
-                <Octicons
-                  name={'number'}
-                  size={responsiveFontSize(2.5)}
-                  color={
-                    isPhoneNumberFocused
-                      ? AppColors.themeColor
-                      : AppColors.LIGHTGRAY
-                  }
-                />
-              }
-              inputHeight={5}
-              isFocused={isPhoneNumberFocused}
-              onFocus={() => setIsPhoneNumberFocused(true)}
-              onBlur={() => setIsPhoneNumberFocused(false)}
-            />
-
-            <AppTextInput
-              inputPlaceHolder={'Password'}
-              inputHeight={5}
-              rightIcon={
-                <TouchableOpacity onPress={() => setIsShow(!isShow)}>
-                  <Ionicons
-                    name={isShow ? 'eye' : 'eye-off'}
-                    size={responsiveFontSize(2.5)}
-                    color={
-                      isPasswordFocused
-                        ? AppColors.themeColor
-                        : AppColors.LIGHTGRAY
-                    }
-                  />
-                </TouchableOpacity>
-              }
-              logo={
-                <Foundation
-                  name={'lock'}
-                  size={responsiveFontSize(2.5)}
-                  color={
-                    isPasswordFocused
-                      ? AppColors.themeColor
-                      : AppColors.LIGHTGRAY
-                  }
-                />
-              }
-              isFocused={isPasswordFocused}
-              onFocus={() => setIsPasswordFocused(true)}
-              onBlur={() => setIsPasswordFocused(false)}
-            />
-          </View>
+          <AppTextInput
+            inputPlaceHolder={'Name'}
+            value={name}
+            onChangeText={text => setName(text)}
+            logo={
+              <Ionicons
+                name={'person'}
+                size={responsiveFontSize(2.5)}
+                color={
+                  isNameFocused ? AppColors.themeColor : AppColors.LIGHTGRAY
+                }
+              />
+            }
+            inputHeight={5}
+            isFocused={isNameFocused}
+            onFocus={() => setIsNameFocused(true)}
+            onBlur={() => setIsNameFocused(false)}
+          />
         </View>
       </ScrollView>
       <View style={{ paddingHorizontal: responsiveWidth(4) }}>
         <AppButton
-          title="Save Changes"
+          title={
+            isLoading ? (
+              <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+            ) : (
+              'Save Changes'
+            )
+          }
           textColor={AppColors.WHITE}
           btnBackgroundColor={AppColors.themeColor}
-          //   handlePress={}
+          handlePress={handleSave}
           textFontWeight={false}
         />
       </View>

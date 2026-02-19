@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, View } from 'react-native';
 import {
   AppColors,
   responsiveFontSize,
@@ -11,14 +11,37 @@ import AuthHeader from '../../components/AuthHeader';
 import AppButton from '../../components/AppButton';
 import { useNavigation } from '@react-navigation/native';
 import LineBreak from '../../components/LineBreak';
-import AppText from '../../components/AppTextComps/AppText';
 import AppTextInput from '../../components/AppTextInput';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BackIcon from '../../components/AppTextComps/BackIcon';
+import { forgotPassword, ShowToast } from '../../GlobalFunctions';
 
 const ForgotPassword = () => {
   const nav = useNavigation();
+  const [email, setEmail] = useState('');
   const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSendCode = async () => {
+    if (!email) {
+      return ShowToast('error', 'Email is required');
+    }
+    setIsLoading(true);
+    try {
+      const res = await forgotPassword(email);
+      if (res?.success) {
+        nav.navigate('EmailVerification', {
+          email: email,
+          userId: res?.data?.userId,
+        });
+      }
+    } catch (e) {
+      // error handled in global function
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
@@ -30,6 +53,10 @@ const ForgotPassword = () => {
             flex: 1,
           }}
         >
+          <BackIcon onBackPress={() => nav.goBack()} />
+
+          <LineBreak space={2} />
+
           <AuthHeader
             heading="Forgot password,"
             subHeading="Please type your email below and we will give you a OTP code"
@@ -38,6 +65,11 @@ const ForgotPassword = () => {
           <View style={{ flex: 1, justifyContent: 'center' }}>
             <AppTextInput
               inputPlaceHolder={'Email'}
+              value={email}
+              onChangeText={text => setEmail(text)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
               logo={
                 <MaterialIcons
                   name={'email'}
@@ -52,24 +84,20 @@ const ForgotPassword = () => {
               onFocus={() => setIsEmailFocused(true)}
               onBlur={() => setIsEmailFocused(false)}
             />
-            <LineBreak space={1} />
-            <TouchableOpacity onPress={() => {}}>
-              <AppText
-                title={'Use phone number?'}
-                textColor={AppColors.themeColor}
-                textSize={1.8}
-                textAlignment={'right'}
-                textFontWeight
-              />
-            </TouchableOpacity>
           </View>
 
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             <AppButton
-              title="Send Code"
+              title={
+                isLoading ? (
+                  <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+                ) : (
+                  'Send Code'
+                )
+              }
               textColor={AppColors.WHITE}
               btnBackgroundColor={AppColors.themeColor}
-              handlePress={() => nav.navigate('EmailVerification')}
+              handlePress={handleSendCode}
               textFontWeight={false}
             />
           </View>

@@ -36,6 +36,9 @@ type props = {
   inputContainerPaddingHorizontal?: any;
   elevation?: any;
   paddingVertical?: any;
+  keyboardType?: any;
+  autoCapitalize?: any;
+  autoCorrect?: any;
 };
 const AppTextInput = ({
   logo,
@@ -64,6 +67,9 @@ const AppTextInput = ({
   inputContainerPaddingHorizontal,
   elevation,
   paddingVertical,
+  keyboardType,
+  autoCapitalize,
+  autoCorrect,
 }: props) => {
   return (
     <View
@@ -84,7 +90,7 @@ const AppTextInput = ({
         borderWidth: isFocused ? 1 : borderWidth || 1,
         borderColor: isFocused
           ? AppColors.themeColor
-          : borderColor || AppColors.WHITE,
+          : borderColor || '#E0E0E0',
         elevation: elevation,
       }}>
       {logo}
@@ -113,6 +119,9 @@ const AppTextInput = ({
         multiline={multiline}
         onFocus={onFocus}
         onBlur={onBlur}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        autoCorrect={autoCorrect}
       />
 
       {rightIcon}

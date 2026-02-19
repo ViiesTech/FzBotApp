@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import axios from 'axios';
 import { BaseUrl } from '../assets/BaseUrl/index';
 import Toast from 'react-native-toast-message';
@@ -24,11 +25,10 @@ const LoginIntegration = async (email: string, password: string, fcmToken: strin
   return dispatch(UserLogin(config));
 };
 
-const Signup = async (name: string, email: string, phone: number, password: string, fcmToken: string, dispatch: any) => {
+const Signup = async (name: string, email: string, password: string, fcmToken: string, dispatch: any) => {
   let data = JSON.stringify({
     name: name,
     email: email,
-    phone: phone,
     password: password,
     FCMToken: fcmToken,
   });
@@ -44,7 +44,6 @@ const Signup = async (name: string, email: string, phone: number, password: stri
   };
   try {
     const response = await axios.request(config);
-    console.log('ressponse.data', response.data)
     if (response?.data?.success) {
       dispatch(setUserData(response?.data?.data))
       dispatch(setToken(response?.data?.accessToken))
@@ -63,18 +62,15 @@ const fetchDetails = async (url: string) => {
   let config = {
     method: 'get',
     maxBodyLength: Infinity,
-    url: `${BaseUrl}user/getUrl?url=${url}`,
-    headers: {
-      'Cookie': '.Tunnels.Relay.WebForwarding.Cookies=CfDJ8Cs4yarcs6pKkdu0hlKHsZvChQHNr2cjqamI2xzvycD7LiPOYRDGTo3HQx1PwAZOjBYthJbzRCYK75MKIuvXnyb9tfo1ISd1TehGno6mnUfBxmeOL1yhhk-rlsviDUDrJBwebz2BrUl7z-_DlXH1yQqFdS4v0dxynDs_c4u0kbIRJvJ4BicPBg6Ll1W1IOiXSI7EgoKkVxeg3lQSE2kwXSbhb0BaP68OMazvTofqnCSGSvB7tRop_4rZQM_nERpz3_ESAKgHyfUbwsnInsqAm57F6TkJsLcwKYau49aNo0AwYwGrpw2JcBpKCDRr8JISrWV7jReZ3_3CDc3pLRWiW3zs2qS0Wmc5MRdUUJ1NnZsh_7pbhojRSddbriRni7sI79XJN9IwM1uHKCrm0vIUrreLr6Fytlm3QhDeU1lebnRls1ZnTk51xCndw24VU-qv1ZfOEAh7Znw5u4DfNuWCa9WVSaMp3yzBodjuOdGKwYmdzpw7s1aObM4nllGnWTeM4wDmDLgFxpusIPTSkjPdyAS2tDFA2hX9_cl3HXek3PB9usF-4e6tYF1Gci_Rw82HO7RcDGwm834DZougP62r5JfUk9XgrY-51BP-I47B3vpx2CW3BMSm5yfN3_-Fqbc97DOONYVAd-vOqjorRvIIN0DeFfnphJFuWqpEADh3joyE8R0e82WXz_cjcAc19dEqDPMHr1ctK-_E_JG3AoNw0ziziV2OvqZhDLG_g0QNtdTnB2ZiPUk7A32hrZtNPux1NJ5Or2W3WQ-KgBxATsLimDM1-OxTNdTsmaYCp-hR4Pp0X09f_QkRek1DVtP48LSYDGzT0SExFfy-1PTzzucCmC1wx3QvzwdB3fPKtWBTUhx2ERh5-osL2_udxW_FQt22loJjg17960ewJi5bxHnVKAmFcg0Hh2UO2HtraX6igsjj'
-    }
+    url: `${BaseUrl}user/getUrl?url=${encodeURIComponent(url)}`,
+    headers: {}
   };
   try {
     const response = await axios.request(config);
-    console.log('response.data', response.data)
     if (response?.data?.success) {
       return response?.data?.data;
     } else {
-      ShowToast('error', response.data.message);
+      ShowToast('error', response?.data?.message || 'Failed to fetch details');
     }
   } catch (error) {
     ShowToast('error', error?.response?.data?.message);
@@ -117,8 +113,36 @@ const AddToWishlist = async (userId: string, productLink: string, title: string,
   }
 }
 
+const logoutUser = async (userId: string) => {
+  try {
+    await axios.post(`${BaseUrl}user/logout`, { userId });
+  } catch (error) {
+    // Silently fail — user is logging out anyway
+  }
+};
+
+const updateFcmTokenOnServer = async (userId: string, fcmToken: string) => {
+  try {
+    // Reuse updateUser approach — directly update FCM token
+    await axios.post(`${BaseUrl}user/updateUser`, {
+      userId,
+      FCMToken: fcmToken,
+    });
+  } catch (error) {
+    // Silently fail
+  }
+};
+
 const getFcmToken = async () => {
   try {
+    // On iOS, register for remote messages before requesting token
+    if (Platform.OS === 'ios') {
+      const isRegistered = messaging().isDeviceRegisteredForRemoteMessages;
+      if (!isRegistered) {
+        await messaging().registerDeviceForRemoteMessages();
+      }
+    }
+
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -127,14 +151,12 @@ const getFcmToken = async () => {
     if (enabled) {
       const fcmToken = await messaging().getToken();
       return fcmToken;
-      // Alert.alert('FCM Token', fcmToken);
     } else {
-      ShowToast('error', 'FCM permission not granted')
-      console.log('FCM permission not granted');
+      return null;
     }
   } catch (error) {
-    ShowToast('error', error);
-    console.error('Error getting FCM token:', error);
+    // Simulators don't support APNS — return null gracefully
+    return null;
   }
 };
 
@@ -191,10 +213,8 @@ const getAllProducts = async (userId: string) => {
   };
   try {
     const response = await axios.request(config);
-    console.log('response', response?.data);
     return response?.data;
   } catch (error) {
-    console.log('error', error.response.data.message)
     ShowToast('error', error?.response?.data?.msg)
     throw error;
   }
@@ -205,4 +225,225 @@ const ShowToast = (type: string, text: string) => {
     text1: text,
   });
 };
-export { LoginIntegration, Signup, fetchDetails, getNotificationsByUserId, AddToWishlist, getFcmToken, removeFromWishList, getAllProducts, ShowToast };
+
+const updateUserSettings = async (userId: string, settings: any) => {
+  let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}user/updateSettings`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify({ userId, ...settings }),
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      return response?.data;
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to update settings');
+    throw error;
+  }
+};
+
+const exportUrls = async (userId: string) => {
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}product/exportUrls?userId=${userId}`,
+    headers: {},
+  };
+  try {
+    const response = await axios.request(config);
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to export URLs');
+    throw error;
+  }
+};
+
+const importUrls = async (userId: string, urls: string[]) => {
+  let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}product/importUrls`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify({ userId, urls }),
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to import URLs');
+    throw error;
+  }
+};
+
+const clearWatchlist = async (userId: string) => {
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}product/clearWatchlist?userId=${userId}`,
+    headers: {},
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to clear watchlist');
+    throw error;
+  }
+};
+
+const changePassword = async (userId: string, oldPassword: string, newPassword: string) => {
+  let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}user/changePassword`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify({ userId, oldPassword, newPassword }),
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to change password');
+    throw error;
+  }
+};
+
+const forgotPassword = async (email: string) => {
+  let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}user/forgetPassword`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify({ email }),
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to send OTP');
+    throw error;
+  }
+};
+
+const verifyOTP = async (email: string, OTP: string) => {
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}user/verifyOTP?email=${encodeURIComponent(email)}&OTP=${OTP}`,
+    headers: {},
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to verify OTP');
+    throw error;
+  }
+};
+
+const resetPassword = async (userId: string, newPassword: string) => {
+  let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}user/resetPassword`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify({ userId, newPassword }),
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to reset password');
+    throw error;
+  }
+};
+
+const updateUserProfile = async (userId: string, name?: string, imageUri?: string, dispatch?: any) => {
+  const formData = new FormData();
+  formData.append('userId', userId);
+  if (name) {
+    formData.append('name', name);
+  }
+  if (imageUri) {
+    const filename = imageUri.split('/').pop() || 'photo.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    formData.append('profileImage', {
+      uri: imageUri,
+      name: filename,
+      type: type,
+    } as any);
+  }
+
+  let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `${BaseUrl}user/updateUser`,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    data: formData,
+  };
+  try {
+    const response = await axios.request(config);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+      if (dispatch && response?.data?.data) {
+        dispatch(setUserData(response?.data?.data));
+      }
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to update profile');
+    throw error;
+  }
+};
+
+export { LoginIntegration, Signup, fetchDetails, getNotificationsByUserId, AddToWishlist, getFcmToken, logoutUser, updateFcmTokenOnServer, removeFromWishList, getAllProducts, ShowToast, updateUserSettings, exportUrls, importUrls, clearWatchlist, changePassword, forgotPassword, verifyOTP, resetPassword, updateUserProfile };

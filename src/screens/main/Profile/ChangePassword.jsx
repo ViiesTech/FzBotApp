@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../../../utils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppHeader from '../../../components/AppHeader';
@@ -9,10 +9,51 @@ import AppTextInput from '../../../components/AppTextInput';
 import Foundation from 'react-native-vector-icons/Foundation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AppText from '../../../components/AppTextComps/AppText';
+import { useSelector } from 'react-redux';
+import { changePassword, ShowToast } from '../../../GlobalFunctions';
+import { useNavigation } from '@react-navigation/native';
 
 const ChangePassword = () => {
-  const [isShow, setIsShow] = useState(false);
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const nav = useNavigation();
+  const { userData } = useSelector(state => state?.user);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const [isOldFocused, setIsOldFocused] = useState(false);
+  const [isNewFocused, setIsNewFocused] = useState(false);
+  const [isConfirmFocused, setIsConfirmFocused] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (!oldPassword) {
+      return ShowToast('error', 'Old password is required');
+    }
+    if (!newPassword) {
+      return ShowToast('error', 'New password is required');
+    }
+    if (newPassword.length < 6) {
+      return ShowToast('error', 'Password must be at least 6 characters');
+    }
+    if (newPassword !== confirmPassword) {
+      return ShowToast('error', 'Passwords do not match');
+    }
+    setIsLoading(true);
+    try {
+      const res = await changePassword(userData?._id, oldPassword, newPassword);
+      if (res?.success) {
+        nav.goBack();
+      }
+    } catch (e) {
+      // error handled in global function
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: AppColors.WHITE }}>
@@ -26,18 +67,17 @@ const ChangePassword = () => {
               textSize={1.7}
             />
             <AppTextInput
-              inputPlaceHolder={'Password'}
+              inputPlaceHolder={'Old Password'}
               inputHeight={5}
+              value={oldPassword}
+              onChangeText={text => setOldPassword(text)}
+              secureTextEntry={!showOld}
               rightIcon={
-                <TouchableOpacity onPress={() => setIsShow(!isShow)}>
+                <TouchableOpacity onPress={() => setShowOld(!showOld)}>
                   <Ionicons
-                    name={isShow ? 'eye' : 'eye-off'}
+                    name={showOld ? 'eye' : 'eye-off'}
                     size={responsiveFontSize(2.5)}
-                    color={
-                      isPasswordFocused
-                        ? AppColors.themeColor
-                        : AppColors.LIGHTGRAY
-                    }
+                    color={isOldFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
                   />
                 </TouchableOpacity>
               }
@@ -45,16 +85,12 @@ const ChangePassword = () => {
                 <Foundation
                   name={'lock'}
                   size={responsiveFontSize(2.5)}
-                  color={
-                    isPasswordFocused
-                      ? AppColors.themeColor
-                      : AppColors.LIGHTGRAY
-                  }
+                  color={isOldFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
                 />
               }
-              isFocused={isPasswordFocused}
-              onFocus={() => setIsPasswordFocused(true)}
-              onBlur={() => setIsPasswordFocused(false)}
+              isFocused={isOldFocused}
+              onFocus={() => setIsOldFocused(true)}
+              onBlur={() => setIsOldFocused(false)}
             />
           </View>
           <View>
@@ -64,18 +100,17 @@ const ChangePassword = () => {
               textSize={1.7}
             />
             <AppTextInput
-              inputPlaceHolder={'Password'}
+              inputPlaceHolder={'New Password'}
               inputHeight={5}
+              value={newPassword}
+              onChangeText={text => setNewPassword(text)}
+              secureTextEntry={!showNew}
               rightIcon={
-                <TouchableOpacity onPress={() => setIsShow(!isShow)}>
+                <TouchableOpacity onPress={() => setShowNew(!showNew)}>
                   <Ionicons
-                    name={isShow ? 'eye' : 'eye-off'}
+                    name={showNew ? 'eye' : 'eye-off'}
                     size={responsiveFontSize(2.5)}
-                    color={
-                      isPasswordFocused
-                        ? AppColors.themeColor
-                        : AppColors.LIGHTGRAY
-                    }
+                    color={isNewFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
                   />
                 </TouchableOpacity>
               }
@@ -83,16 +118,12 @@ const ChangePassword = () => {
                 <Foundation
                   name={'lock'}
                   size={responsiveFontSize(2.5)}
-                  color={
-                    isPasswordFocused
-                      ? AppColors.themeColor
-                      : AppColors.LIGHTGRAY
-                  }
+                  color={isNewFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
                 />
               }
-              isFocused={isPasswordFocused}
-              onFocus={() => setIsPasswordFocused(true)}
-              onBlur={() => setIsPasswordFocused(false)}
+              isFocused={isNewFocused}
+              onFocus={() => setIsNewFocused(true)}
+              onBlur={() => setIsNewFocused(false)}
             />
           </View>
           <View>
@@ -102,18 +133,17 @@ const ChangePassword = () => {
               textSize={1.7}
             />
             <AppTextInput
-              inputPlaceHolder={'Password'}
+              inputPlaceHolder={'Confirm Password'}
               inputHeight={5}
+              value={confirmPassword}
+              onChangeText={text => setConfirmPassword(text)}
+              secureTextEntry={!showConfirm}
               rightIcon={
-                <TouchableOpacity onPress={() => setIsShow(!isShow)}>
+                <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
                   <Ionicons
-                    name={isShow ? 'eye' : 'eye-off'}
+                    name={showConfirm ? 'eye' : 'eye-off'}
                     size={responsiveFontSize(2.5)}
-                    color={
-                      isPasswordFocused
-                        ? AppColors.themeColor
-                        : AppColors.LIGHTGRAY
-                    }
+                    color={isConfirmFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
                   />
                 </TouchableOpacity>
               }
@@ -121,26 +151,28 @@ const ChangePassword = () => {
                 <Foundation
                   name={'lock'}
                   size={responsiveFontSize(2.5)}
-                  color={
-                    isPasswordFocused
-                      ? AppColors.themeColor
-                      : AppColors.LIGHTGRAY
-                  }
+                  color={isConfirmFocused ? AppColors.themeColor : AppColors.LIGHTGRAY}
                 />
               }
-              isFocused={isPasswordFocused}
-              onFocus={() => setIsPasswordFocused(true)}
-              onBlur={() => setIsPasswordFocused(false)}
+              isFocused={isConfirmFocused}
+              onFocus={() => setIsConfirmFocused(true)}
+              onBlur={() => setIsConfirmFocused(false)}
             />
           </View>
         </View>
       </ScrollView>
       <View style={{ paddingHorizontal: responsiveWidth(4) }}>
         <AppButton
-          title="Change Password"
+          title={
+            isLoading ? (
+              <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+            ) : (
+              'Change Password'
+            )
+          }
           textColor={AppColors.WHITE}
           btnBackgroundColor={AppColors.themeColor}
-          //   handlePress={}
+          handlePress={handleChangePassword}
           textFontWeight={false}
         />
       </View>
