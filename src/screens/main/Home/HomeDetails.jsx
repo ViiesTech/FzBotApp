@@ -26,9 +26,22 @@ import { removeFromWishList } from '../../../GlobalFunctions';
 
 const HomeDetails = ({ navigation, route }) => {
   const productData = route?.params?.data || {};
-  const { availability = '', description = '', image = '', price = '', productLink = '', title = 'Product', userId = '', _id = '' } = productData;
+  const { availability = '', description = '', image = '', price = '', productLink = '', title = 'Product', userId = '', _id = '', lastCheckedAt = '' } = productData;
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Format time ago
+  const getTimeAgo = (dateStr) => {
+    if (!dateStr) return 'Never';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins} min${mins > 1 ? 's' : ''} ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  };
 
   const removeWishlistHandler = async () => {
     setIsLoading(true);
@@ -139,7 +152,7 @@ const HomeDetails = ({ navigation, route }) => {
         </AppText>
 
         <AppText
-          title={'last checked: 5 mins ago'}
+          title={`last checked: ${getTimeAgo(lastCheckedAt)}`}
           textColor={AppColors.GRAY}
           textSize={1.6}
         />

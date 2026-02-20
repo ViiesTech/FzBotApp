@@ -275,7 +275,9 @@ const Home = ({ navigation }) => {
             alignItems: 'center',
           }}
         >
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => nav.navigate('Notification')}
+          >
             <FontAwesome
               size={responsiveFontSize(1.7)}
               name={'bell'}
