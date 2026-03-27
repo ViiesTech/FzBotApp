@@ -5,16 +5,15 @@ import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AppColors, responsiveHeight } from '../utils';
-import Home from '../screens/main/Home/Home';
-import Icon from 'react-native-vector-icons/Entypo';
-// import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-// import Ionicons from 'react-native-vector-icons/Ionicons';
 import LineBreak from '../components/LineBreak';
-import AddProduct from './../screens/main/Home/AddProduct';
-import HomeDetails from './../screens/main/Home/HomeDetails';
-import Notification from './../screens/main/Notification/Notification';
+import MySites from '../screens/main/Sites/MySites';
+import AddSite from '../screens/main/Sites/AddSite';
+import SiteDetail from '../screens/main/Sites/SiteDetail';
+import ProductDetail from '../screens/main/Sites/ProductDetail';
+import Changelog from '../screens/main/Changelog/Changelog';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AppSettings from './../screens/main/AppSettings/AppSettings';
 import Profile from './../screens/main/Profile/Profile';
 import ChangePassword from './../screens/main/Profile/ChangePassword';
@@ -31,8 +30,9 @@ const Main = () => {
       initialRouteName="Main"
     >
       <Stack.Screen name="Main" component={MyTabs} />
-      <Stack.Screen name="AddProduct" component={AddProduct} />
-      <Stack.Screen name="HomeDetails" component={HomeDetails} />
+      <Stack.Screen name="AddSite" component={AddSite} />
+      <Stack.Screen name="SiteDetail" component={SiteDetail} />
+      <Stack.Screen name="ProductDetail" component={ProductDetail} />
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="ChangePassword" component={ChangePassword} />
       <Stack.Screen name="PersonalInformation" component={PersonalInformation} />
@@ -59,13 +59,13 @@ function MyTabs() {
       }}
     >
       <Tab.Screen
-        name={'Home'}
-        component={Home}
+        name={'Sites'}
+        component={MySites}
         options={{
           tabBarIcon: ({ focused }) =>
             focused ? (
               <View style={{ alignItems: 'center' }}>
-                <Icon size={22} name={'home'} color={AppColors.WHITE} />
+                <MaterialCommunityIcons size={22} name={'web'} color={AppColors.WHITE} />
                 <LineBreak space={0.8} />
                 <View
                   style={{
@@ -77,13 +77,13 @@ function MyTabs() {
                 />
               </View>
             ) : (
-              <Icon size={22} name={'home'} color={AppColors.GRAY} />
+              <MaterialCommunityIcons size={22} name={'web'} color={AppColors.GRAY} />
             ),
         }}
       />
       <Tab.Screen
-        name={'Notification'}
-        component={Notification}
+        name={'Changelog'}
+        component={Changelog}
         options={{
           tabBarIcon: ({ focused }) =>
             focused ? (

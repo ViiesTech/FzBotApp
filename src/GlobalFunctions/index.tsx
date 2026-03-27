@@ -446,4 +446,124 @@ const updateUserProfile = async (userId: string, name?: string, imageUri?: strin
   }
 };
 
-export { LoginIntegration, Signup, fetchDetails, getNotificationsByUserId, AddToWishlist, getFcmToken, logoutUser, updateFcmTokenOnServer, removeFromWishList, getAllProducts, ShowToast, updateUserSettings, exportUrls, importUrls, clearWatchlist, changePassword, forgotPassword, verifyOTP, resetPassword, updateUserProfile };
+// ─── SITE MONITORING ──────────────────────────────────────────────────────────
+
+const addSite = async (userId: string, url: string, name?: string) => {
+  try {
+    const response = await axios.post(`${BaseUrl}site/add`, { userId, url, name }, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to add site');
+    throw error;
+  }
+};
+
+const getSites = async (userId: string) => {
+  try {
+    const response = await axios.get(`${BaseUrl}site/getAll?userId=${userId}`);
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to fetch sites');
+    throw error;
+  }
+};
+
+const getSiteById = async (siteId: string) => {
+  try {
+    const response = await axios.get(`${BaseUrl}site/getById?siteId=${siteId}`);
+    return response?.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+const deleteSite = async (siteId: string) => {
+  try {
+    const response = await axios.get(`${BaseUrl}site/delete?siteId=${siteId}`);
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to delete site');
+    throw error;
+  }
+};
+
+const updateSite = async (siteId: string, updates: any) => {
+  try {
+    const response = await axios.post(`${BaseUrl}site/update`, { siteId, ...updates }, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to update site');
+    throw error;
+  }
+};
+
+const recrawlSite = async (siteId: string) => {
+  try {
+    const response = await axios.post(`${BaseUrl}site/recrawl`, { siteId }, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to trigger recrawl');
+    throw error;
+  }
+};
+
+const getSiteProducts = async (siteId: string, page: number = 1, limit: number = 50, search: string = '', status: string = 'active') => {
+  try {
+    const params = `siteId=${siteId}&page=${page}&limit=${limit}&status=${status}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+    const response = await axios.get(`${BaseUrl}site/products?${params}`);
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to fetch products');
+    throw error;
+  }
+};
+
+const getSiteChangelog = async (userId: string, page: number = 1, limit: number = 30, type: string = '') => {
+  try {
+    const params = `userId=${userId}&page=${page}&limit=${limit}${type ? `&type=${type}` : ''}`;
+    const response = await axios.get(`${BaseUrl}site/changelog?${params}`);
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Failed to fetch changelog');
+    throw error;
+  }
+};
+
+const markChangesRead = async (changeIds: string[]) => {
+  try {
+    const response = await axios.post(`${BaseUrl}site/changelog/markRead`, { changeIds }, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response?.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+export { LoginIntegration, Signup, fetchDetails, getNotificationsByUserId, AddToWishlist, getFcmToken, logoutUser, updateFcmTokenOnServer, removeFromWishList, getAllProducts, ShowToast, updateUserSettings, exportUrls, importUrls, clearWatchlist, changePassword, forgotPassword, verifyOTP, resetPassword, updateUserProfile, addSite, getSites, getSiteById, deleteSite, updateSite, recrawlSite, getSiteProducts, getSiteChangelog, markChangesRead };
