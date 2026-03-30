@@ -581,4 +581,21 @@ const markChangesRead = async (token: string, changeIds: string[]) => {
   }
 };
 
-export { LoginIntegration, Signup, fetchDetails, getNotificationsByUserId, AddToWishlist, getFcmToken, logoutUser, updateFcmTokenOnServer, removeFromWishList, getAllProducts, ShowToast, updateUserSettings, exportUrls, importUrls, clearWatchlist, changePassword, forgotPassword, verifyOTP, resetPassword, updateUserProfile, addSite, getSites, getSiteById, deleteSite, updateSite, recrawlSite, getSiteProducts, getSiteChangelog, markChangesRead };
+const testPush = async (token: string, type: string) => {
+  try {
+    const response = await axios.post(`${BaseUrl}site/testPush`, { type }, {
+      headers: authHeaders(token),
+    });
+    if (response?.data?.success) {
+      ShowToast('success', response?.data?.msg);
+    } else {
+      ShowToast('error', response?.data?.msg);
+    }
+    return response?.data;
+  } catch (error: any) {
+    ShowToast('error', error?.response?.data?.msg || 'Test push failed');
+    throw error;
+  }
+};
+
+export { LoginIntegration, Signup, fetchDetails, getNotificationsByUserId, AddToWishlist, getFcmToken, logoutUser, updateFcmTokenOnServer, removeFromWishList, getAllProducts, ShowToast, updateUserSettings, exportUrls, importUrls, clearWatchlist, changePassword, forgotPassword, verifyOTP, resetPassword, updateUserProfile, addSite, getSites, getSiteById, deleteSite, updateSite, recrawlSite, getSiteProducts, getSiteChangelog, markChangesRead, testPush };
