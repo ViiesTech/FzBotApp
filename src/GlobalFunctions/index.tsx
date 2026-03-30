@@ -5,6 +5,11 @@ import Toast from 'react-native-toast-message';
 import { setToken, setUserData, UserLogin } from '../redux/Slices';
 import messaging from '@react-native-firebase/messaging';
 
+const authHeaders = (token: string) => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${token}`,
+});
+
 const LoginIntegration = async (email: string, password: string, fcmToken: string, dispatch: any) => {
   let data = JSON.stringify({
     email: email,
@@ -448,10 +453,10 @@ const updateUserProfile = async (userId: string, name?: string, imageUri?: strin
 
 // ─── SITE MONITORING ──────────────────────────────────────────────────────────
 
-const addSite = async (userId: string, url: string, name?: string) => {
+const addSite = async (token: string, url: string, name?: string) => {
   try {
-    const response = await axios.post(`${BaseUrl}site/add`, { userId, url, name }, {
-      headers: { 'Content-Type': 'application/json' },
+    const response = await axios.post(`${BaseUrl}site/add`, { url, name }, {
+      headers: authHeaders(token),
     });
     if (response?.data?.success) {
       ShowToast('success', response?.data?.msg);
@@ -465,9 +470,11 @@ const addSite = async (userId: string, url: string, name?: string) => {
   }
 };
 
-const getSites = async (userId: string) => {
+const getSites = async (token: string) => {
   try {
-    const response = await axios.get(`${BaseUrl}site/getAll?userId=${userId}`);
+    const response = await axios.get(`${BaseUrl}site/getAll`, {
+      headers: authHeaders(token),
+    });
     return response?.data;
   } catch (error: any) {
     ShowToast('error', error?.response?.data?.msg || 'Failed to fetch sites');
@@ -475,18 +482,22 @@ const getSites = async (userId: string) => {
   }
 };
 
-const getSiteById = async (siteId: string) => {
+const getSiteById = async (token: string, siteId: string) => {
   try {
-    const response = await axios.get(`${BaseUrl}site/getById?siteId=${siteId}`);
+    const response = await axios.get(`${BaseUrl}site/getById?siteId=${siteId}`, {
+      headers: authHeaders(token),
+    });
     return response?.data;
   } catch (error: any) {
     throw error;
   }
 };
 
-const deleteSite = async (siteId: string) => {
+const deleteSite = async (token: string, siteId: string) => {
   try {
-    const response = await axios.get(`${BaseUrl}site/delete?siteId=${siteId}`);
+    const response = await axios.get(`${BaseUrl}site/delete?siteId=${siteId}`, {
+      headers: authHeaders(token),
+    });
     if (response?.data?.success) {
       ShowToast('success', response?.data?.msg);
     } else {
@@ -499,10 +510,10 @@ const deleteSite = async (siteId: string) => {
   }
 };
 
-const updateSite = async (siteId: string, updates: any) => {
+const updateSite = async (token: string, siteId: string, updates: any) => {
   try {
     const response = await axios.post(`${BaseUrl}site/update`, { siteId, ...updates }, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(token),
     });
     if (response?.data?.success) {
       ShowToast('success', response?.data?.msg);
@@ -516,10 +527,10 @@ const updateSite = async (siteId: string, updates: any) => {
   }
 };
 
-const recrawlSite = async (siteId: string) => {
+const recrawlSite = async (token: string, siteId: string) => {
   try {
     const response = await axios.post(`${BaseUrl}site/recrawl`, { siteId }, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(token),
     });
     if (response?.data?.success) {
       ShowToast('success', response?.data?.msg);
@@ -533,10 +544,12 @@ const recrawlSite = async (siteId: string) => {
   }
 };
 
-const getSiteProducts = async (siteId: string, page: number = 1, limit: number = 50, search: string = '', status: string = 'active') => {
+const getSiteProducts = async (token: string, siteId: string, page: number = 1, limit: number = 50, search: string = '', status: string = 'active') => {
   try {
     const params = `siteId=${siteId}&page=${page}&limit=${limit}&status=${status}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
-    const response = await axios.get(`${BaseUrl}site/products?${params}`);
+    const response = await axios.get(`${BaseUrl}site/products?${params}`, {
+      headers: authHeaders(token),
+    });
     return response?.data;
   } catch (error: any) {
     ShowToast('error', error?.response?.data?.msg || 'Failed to fetch products');
@@ -544,10 +557,12 @@ const getSiteProducts = async (siteId: string, page: number = 1, limit: number =
   }
 };
 
-const getSiteChangelog = async (userId: string, page: number = 1, limit: number = 30, type: string = '') => {
+const getSiteChangelog = async (token: string, page: number = 1, limit: number = 30, type: string = '') => {
   try {
-    const params = `userId=${userId}&page=${page}&limit=${limit}${type ? `&type=${type}` : ''}`;
-    const response = await axios.get(`${BaseUrl}site/changelog?${params}`);
+    const params = `page=${page}&limit=${limit}${type ? `&type=${type}` : ''}`;
+    const response = await axios.get(`${BaseUrl}site/changelog?${params}`, {
+      headers: authHeaders(token),
+    });
     return response?.data;
   } catch (error: any) {
     ShowToast('error', error?.response?.data?.msg || 'Failed to fetch changelog');
@@ -555,10 +570,10 @@ const getSiteChangelog = async (userId: string, page: number = 1, limit: number 
   }
 };
 
-const markChangesRead = async (changeIds: string[]) => {
+const markChangesRead = async (token: string, changeIds: string[]) => {
   try {
     const response = await axios.post(`${BaseUrl}site/changelog/markRead`, { changeIds }, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(token),
     });
     return response?.data;
   } catch (error: any) {

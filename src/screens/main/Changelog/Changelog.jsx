@@ -94,13 +94,15 @@ const Changelog = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const {_id} = useSelector(state => state?.user?.userData);
+  const token = useSelector(state => state?.user?.token);
   const isFocus = useIsFocused();
 
   const fetchChanges = useCallback(
     async (p = 1, append = false) => {
+      if (!token) return;
       if (p === 1 && !append) setIsLoading(true);
       try {
-        const response = await getSiteChangelog(_id, p, 30, filterType);
+        const response = await getSiteChangelog(token, p, 30, filterType);
         if (response?.success) {
           const newChanges = response.data || [];
           if (append) {
@@ -119,14 +121,14 @@ const Changelog = () => {
             .filter(c => !c.isRead)
             .map(c => c._id);
           if (unreadIds.length > 0) {
-            markChangesRead(unreadIds).catch(() => {});
+            markChangesRead(token, unreadIds).catch(() => {});
           }
         }
       } catch (error) {}
       setIsLoading(false);
       setLoadingMore(false);
     },
-    [_id, filterType],
+    [token, filterType],
   );
 
   const onRefresh = useCallback(async () => {

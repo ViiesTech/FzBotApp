@@ -32,33 +32,36 @@ const MySites = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [delLoading, setDelLoading] = useState(null);
   const {_id, name} = useSelector(state => state?.user?.userData);
+  const token = useSelector(state => state?.user?.token);
   const isFocus = useIsFocused();
 
   const fetchSites = useCallback(async () => {
+    if (!token) return;
     setIsLoading(true);
     try {
-      const response = await getSites(_id);
+      const response = await getSites(token);
       setSites(response?.data || []);
     } catch (error) {
       // handled in GlobalFunctions
     } finally {
       setIsLoading(false);
     }
-  }, [_id]);
+  }, [token]);
 
   const onRefresh = useCallback(async () => {
+    if (!token) return;
     setRefreshing(true);
     try {
-      const response = await getSites(_id);
+      const response = await getSites(token);
       setSites(response?.data || []);
     } catch (error) {}
     setRefreshing(false);
-  }, [_id]);
+  }, [token]);
 
   const handleDelete = async siteId => {
     setDelLoading(siteId);
     try {
-      const response = await deleteSite(siteId);
+      const response = await deleteSite(token, siteId);
       if (response?.success) {
         setSites(prev => prev.filter(s => s._id !== siteId));
       }
@@ -70,9 +73,18 @@ const MySites = () => {
     fetchSites();
   }, [isFocus, fetchSites]);
 
+  // Auto-refresh every 15s while any site is crawling
+  useEffect(() => {
+    const hasCrawling = sites.some(s => s.status === 'crawling');
+    if (!hasCrawling) return;
+    const interval = setInterval(() => fetchSites(), 15000);
+    return () => clearInterval(interval);
+  }, [sites, fetchSites]);
+
   const getStatusColor = status => {
     if (status === 'active') return AppColors.lightGreen;
     if (status === 'error') return AppColors.RED_COLOR;
+    if (status === 'crawling') return AppColors.themeColor;
     return AppColors.GRAY;
   };
 
@@ -80,6 +92,7 @@ const MySites = () => {
     if (status === 'active') return 'Active';
     if (status === 'error') return 'Error';
     if (status === 'paused') return 'Paused';
+    if (status === 'crawling') return 'Crawling...';
     return status;
   };
 
@@ -135,7 +148,13 @@ const MySites = () => {
             paddingHorizontal: responsiveWidth(2.5),
             paddingVertical: responsiveHeight(0.4),
             borderRadius: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
           }}>
+          {item.status === 'crawling' && (
+            <ActivityIndicator size="small" color={AppColors.WHITE} />
+          )}
           <AppText
             title={getStatusText(item.status)}
             textColor={AppColors.WHITE}

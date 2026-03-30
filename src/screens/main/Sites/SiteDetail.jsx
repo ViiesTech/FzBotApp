@@ -23,12 +23,15 @@ import AppHeader from '../../../components/AppHeader';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {getSiteProducts, recrawlSite} from '../../../GlobalFunctions';
+import {getSiteProducts, recrawlSite, getSiteById} from '../../../GlobalFunctions';
 import {useNavigation} from '@react-navigation/native';
+import {useSelector} from 'react-redux';
 
 const SiteDetail = ({route}) => {
   const nav = useNavigation();
-  const {site} = route.params;
+  const token = useSelector(state => state?.user?.token);
+  const {site: initialSite} = route.params;
+  const [siteData, setSiteData] = useState(initialSite);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,7 +47,8 @@ const SiteDetail = ({route}) => {
       if (p === 1 && !append) setIsLoading(true);
       try {
         const response = await getSiteProducts(
-          site._id,
+          token,
+          siteData._id,
           p,
           50,
           searchQuery,
@@ -67,7 +71,7 @@ const SiteDetail = ({route}) => {
       setIsLoading(false);
       setLoadingMore(false);
     },
-    [site._id, searchQuery, statusFilter],
+    [token, siteData._id, searchQuery, statusFilter],
   );
 
   const onRefresh = useCallback(async () => {
@@ -88,10 +92,32 @@ const SiteDetail = ({route}) => {
   const handleRecrawl = async () => {
     setRecrawling(true);
     try {
-      await recrawlSite(site._id);
+      const resp = await recrawlSite(token, siteData._id);
+      if (resp?.success) {
+        setSiteData(prev => ({...prev, status: 'crawling'}));
+      }
     } catch (error) {}
     setRecrawling(false);
   };
+
+  // Auto-refresh while site is crawling to show progress
+  useEffect(() => {
+    if (siteData.status !== 'crawling') return;
+    const interval = setInterval(async () => {
+      try {
+        const resp = await getSiteById(token, siteData._id);
+        if (resp?.success && resp.data) {
+          setSiteData(resp.data);
+          if (resp.data.status !== 'crawling') {
+            fetchProducts(1, false);
+          }
+        }
+      } catch (e) {}
+      // Also refresh products to show incremental progress
+      fetchProducts(1, false);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [siteData.status, siteData._id, token, fetchProducts]);
 
   useEffect(() => {
     setPage(1);
@@ -211,22 +237,23 @@ const SiteDetail = ({route}) => {
             textFontWeight
           />
           <AppText
-            title={site.domain}
-            textColor={AppColors.GRAY}
+            title={siteData.status === 'crawling' ? 'Crawling in progress...' : siteData.domain}
+            textColor={siteData.status === 'crawling' ? AppColors.themeColor : AppColors.GRAY}
             textSize={1.2}
           />
         </View>
         <TouchableOpacity
           onPress={handleRecrawl}
-          disabled={recrawling}
+          disabled={recrawling || siteData.status === 'crawling'}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 4,
-            backgroundColor: AppColors.themeColor,
+            backgroundColor: siteData.status === 'crawling' ? AppColors.GRAY : AppColors.themeColor,
             paddingHorizontal: responsiveWidth(3),
             paddingVertical: responsiveHeight(0.8),
             borderRadius: 8,
+            opacity: siteData.status === 'crawling' ? 0.6 : 1,
           }}>
           {recrawling ? (
             <ActivityIndicator size="small" color={AppColors.WHITE} />
@@ -284,7 +311,7 @@ const SiteDetail = ({route}) => {
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
-      <AppHeader onBackPress heading={site.name} />
+      <AppHeader onBackPress heading={siteData.name} />
 
       <View style={{paddingHorizontal: responsiveWidth(4)}}>
         <AppTextInput
@@ -355,8 +382,8 @@ const SiteDetail = ({route}) => {
                 <LineBreak space={1} />
                 <AppText
                   title={
-                    site.status === 'active'
-                      ? 'Products are being discovered...'
+                    siteData.status === 'crawling'
+                      ? 'Products are being discovered...\nThis refreshes automatically.'
                       : 'No products found'
                   }
                   textColor={AppColors.GRAY}

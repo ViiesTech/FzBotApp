@@ -22,6 +22,7 @@ const AddSite = () => {
   const [siteName, setSiteName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const {_id} = useSelector(state => state?.user?.userData);
+  const token = useSelector(state => state?.user?.token);
 
   const handleAddSite = async () => {
     Keyboard.dismiss();
@@ -39,7 +40,7 @@ const AddSite = () => {
 
     setIsLoading(true);
     try {
-      const response = await addSite(_id, trimmedUrl, siteName.trim() || undefined);
+      const response = await addSite(token, trimmedUrl, siteName.trim() || undefined);
       if (response?.success) {
         nav.goBack();
       }
