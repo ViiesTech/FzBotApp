@@ -331,6 +331,7 @@ const Changelog = () => {
           showsHorizontalScrollIndicator={false}
           keyExtractor={item => item.value}
           contentContainerStyle={{gap: responsiveWidth(2)}}
+          style={{flexGrow: 0}}
           renderItem={({item: ct}) => (
             <TouchableOpacity
               onPress={() => {
