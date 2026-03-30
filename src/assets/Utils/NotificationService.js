@@ -1,5 +1,6 @@
 import messaging from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
+import { navigationRef } from './NavigationRef';
 
 // 🔹 Setup notification channel
 async function createDefaultChannel() {
@@ -27,6 +28,13 @@ export function setupNotificationListeners() {
   createDefaultChannel();
   requestUserPermission();
 
+  // Handle notifee notification tap (foreground-displayed notifications)
+  notifee.onForegroundEvent(({ type }) => {
+    if (type === EventType.PRESS) {
+      navigationRef.current?.navigate('Main', { screen: 'Main', params: { screen: 'Changelog' } });
+    }
+  });
+
   // Foreground notifications
   return messaging().onMessage(async remoteMessage => {
     await notifee.displayNotification({
@@ -34,7 +42,7 @@ export function setupNotificationListeners() {
       body: remoteMessage?.notification?.body,
       android: {
         channelId: 'FZBot1234',
-        smallIcon: 'ic_launcher', // or custom drawable
+        smallIcon: 'ic_launcher',
         pressAction: { id: 'default' },
       },
     });

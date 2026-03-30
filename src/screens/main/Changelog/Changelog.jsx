@@ -30,7 +30,7 @@ const changeTypes = [
   {value: 'new_product', label: 'New'},
   {value: 'removed_product', label: 'Removed'},
   {value: 'price_change', label: 'Price'},
-  {value: 'stock_change', label: 'Stock'},
+  {value: 'stock_change', label: 'Out of Stock'},
   {value: 'back_in_stock', label: 'Back in Stock'},
 ];
 
@@ -73,16 +73,37 @@ const getChangeLabel = type => {
     case 'new_product':
       return 'New Product';
     case 'removed_product':
-      return 'Removed';
+      return 'Removed from Site';
     case 'price_change':
       return 'Price Change';
     case 'stock_change':
-      return 'Stock Change';
+      return 'Out of Stock';
     case 'back_in_stock':
       return 'Back in Stock';
     default:
       return type;
   }
+};
+
+// Semantic color: "In Stock" = green, "Out of Stock" = red
+// For prices: lower = green, higher = red (compare both values)
+const getValueColor = (value, otherValue) => {
+  if (!value) return AppColors.GRAY;
+  const lower = value.toLowerCase();
+  // Stock-based
+  if (lower.includes('in stock')) return AppColors.lightGreen;
+  if (lower.includes('out of stock') || lower.includes('sold')) return AppColors.RED_COLOR;
+  // Price-based: parse both and compare
+  const parsePrice = str => {
+    if (!str) return NaN;
+    return parseFloat(str.replace(/[^0-9.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.'));
+  };
+  const thisNum = parsePrice(value);
+  const otherNum = parsePrice(otherValue);
+  if (!isNaN(thisNum) && !isNaN(otherNum)) {
+    return thisNum <= otherNum ? AppColors.lightGreen : AppColors.RED_COLOR;
+  }
+  return AppColors.GRAY;
 };
 
 const Changelog = () => {
@@ -219,13 +240,13 @@ const Changelog = () => {
                 }}>
                 <AppText
                   title={item.oldValue}
-                  textColor={AppColors.RED_COLOR}
+                  textColor={getValueColor(item.oldValue, item.newValue)}
                   textSize={1.2}
                 />
                 <AppText title={'→'} textColor={AppColors.GRAY} textSize={1.2} />
                 <AppText
                   title={item.newValue}
-                  textColor={AppColors.lightGreen}
+                  textColor={getValueColor(item.newValue, item.oldValue)}
                   textSize={1.2}
                   textFontWeight
                 />

@@ -1,6 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { navigationRef } from './src/assets/Utils/NavigationRef';
 import Routes from './src/routes/Routes';
 import { Platform, StatusBar, PermissionsAndroid } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -35,6 +36,21 @@ const App = () => {
 
     requestPermissions();
 
+    // Handle notification tap when app is in background
+    const unsubscribeOnOpen = messaging().onNotificationOpenedApp(() => {
+      navigationRef.current?.navigate('Main', { screen: 'Main', params: { screen: 'Changelog' } });
+    });
+
+    // Handle notification tap when app was killed (cold start)
+    messaging().getInitialNotification().then(remoteMessage => {
+      if (remoteMessage) {
+        // Small delay to ensure navigation is ready
+        setTimeout(() => {
+          navigationRef.current?.navigate('Main', { screen: 'Main', params: { screen: 'Changelog' } });
+        }, 1000);
+      }
+    });
+
     // Listen for FCM token refreshes and update the server
     const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (newToken) => {
       // We can't access redux store here directly, so we store it
@@ -58,6 +74,7 @@ const App = () => {
 
     return () => {
       unsubscribeTokenRefresh();
+      unsubscribeOnOpen();
     };
   }, []);
 
@@ -71,7 +88,7 @@ const App = () => {
       <ErrorBoundary>
         <Provider store={store}>
           <StatusBar barStyle={'dark-content'} />
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef}>
             <Routes />
             <Toast />
           </NavigationContainer>

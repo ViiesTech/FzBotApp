@@ -30,7 +30,6 @@ import {
   exportUrls,
   importUrls,
   clearWatchlist,
-  testPush,
 } from '../../../GlobalFunctions';
 
 const FREQ_OPTIONS = [
@@ -93,7 +92,7 @@ const AppSettings = ({ navigation }) => {
   const [clearingWatchlist, setClearingWatchlist] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [testingPush, setTestingPush] = useState(null); // 'out_of_stock' | 'back_in_stock' | 'price_change' | null
+
 
   // Info modal state
   const [infoModalVisible, setInfoModalVisible] = useState(false);
@@ -388,56 +387,7 @@ const AppSettings = ({ navigation }) => {
           infoKey="importUrls"
         />
 
-        <LineBreak space={2.5} />
 
-        {/* ─── Test Notifications ──────────────────────── */}
-        <AppText
-          title={'Test Notifications'}
-          textColor={AppColors.BLACK}
-          textSize={2}
-          textFontWeight
-        />
-        <AppText
-          title={'Trigger a real push notification to verify your setup.'}
-          textColor={AppColors.GRAY}
-          textSize={1.3}
-        />
-        <LineBreak space={1} />
-        <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 10}}>
-          {[
-            {label: 'Out of Stock', type: 'out_of_stock', icon: 'alert-circle', color: AppColors.RED_COLOR},
-            {label: 'Back in Stock', type: 'back_in_stock', icon: 'checkmark-circle', color: AppColors.lightGreen},
-            {label: 'Price Change', type: 'price_change', icon: 'pricetag', color: AppColors.themeColor},
-          ].map(btn => (
-            <TouchableOpacity
-              key={btn.type}
-              disabled={testingPush !== null}
-              onPress={async () => {
-                setTestingPush(btn.type);
-                try {
-                  await testPush(token, btn.type);
-                } catch (e) {}
-                setTestingPush(null);
-              }}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                backgroundColor: btn.color,
-                paddingHorizontal: responsiveWidth(3),
-                paddingVertical: responsiveHeight(1),
-                borderRadius: 8,
-                opacity: testingPush && testingPush !== btn.type ? 0.4 : 1,
-              }}>
-              {testingPush === btn.type ? (
-                <ActivityIndicator size="small" color={AppColors.WHITE} />
-              ) : (
-                <Ionicons name={btn.icon} size={18} color={AppColors.WHITE} />
-              )}
-              <AppText title={btn.label} textColor={AppColors.WHITE} textSize={1.4} textFontWeight />
-            </TouchableOpacity>
-          ))}
-        </View>
       </ScrollView>
 
       {/* ─── Info Modal ────────────────────────────────── */}
