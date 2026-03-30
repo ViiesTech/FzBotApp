@@ -254,15 +254,11 @@ const updateUserSettings = async (userId: string, settings: any) => {
   }
 };
 
-const exportUrls = async (userId: string) => {
-  let config = {
-    method: 'get',
-    maxBodyLength: Infinity,
-    url: `${BaseUrl}product/exportUrls?userId=${userId}`,
-    headers: {},
-  };
+const exportUrls = async (token: string) => {
   try {
-    const response = await axios.request(config);
+    const response = await axios.get(`${BaseUrl}site/exportUrls`, {
+      headers: authHeaders(token),
+    });
     return response?.data;
   } catch (error: any) {
     ShowToast('error', error?.response?.data?.msg || 'Failed to export URLs');
@@ -270,18 +266,11 @@ const exportUrls = async (userId: string) => {
   }
 };
 
-const importUrls = async (userId: string, urls: string[]) => {
-  let config = {
-    method: 'post',
-    maxBodyLength: Infinity,
-    url: `${BaseUrl}product/importUrls`,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: JSON.stringify({ userId, urls }),
-  };
+const importUrls = async (token: string, urls: string[]) => {
   try {
-    const response = await axios.request(config);
+    const response = await axios.post(`${BaseUrl}site/importUrls`, { urls }, {
+      headers: authHeaders(token),
+    });
     if (response?.data?.success) {
       ShowToast('success', response?.data?.msg);
     } else {
@@ -294,15 +283,11 @@ const importUrls = async (userId: string, urls: string[]) => {
   }
 };
 
-const clearWatchlist = async (userId: string) => {
-  let config = {
-    method: 'get',
-    maxBodyLength: Infinity,
-    url: `${BaseUrl}product/clearWatchlist?userId=${userId}`,
-    headers: {},
-  };
+const clearWatchlist = async (token: string) => {
   try {
-    const response = await axios.request(config);
+    const response = await axios.get(`${BaseUrl}site/clearAll`, {
+      headers: authHeaders(token),
+    });
     if (response?.data?.success) {
       ShowToast('success', response?.data?.msg);
     } else {
@@ -310,7 +295,7 @@ const clearWatchlist = async (userId: string) => {
     }
     return response?.data;
   } catch (error: any) {
-    ShowToast('error', error?.response?.data?.msg || 'Failed to clear watchlist');
+    ShowToast('error', error?.response?.data?.msg || 'Failed to clear sites');
     throw error;
   }
 };

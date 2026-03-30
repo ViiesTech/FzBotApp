@@ -62,19 +62,19 @@ const INFO_MAP = {
       'Controls how often FZBot re-scans your tracked products for changes.\n\n• Every 1 Hour — Most frequent, catches changes fast\n• Every 6 Hours — Good balance of speed and efficiency\n• Every 12 Hours — Twice a day checks\n• Every 24 Hours — Once a day, lightest on resources\n\nLower frequencies mean faster detection but slightly more server usage.',
   },
   clearWatchlist: {
-    title: 'Clear Watchlist',
+    title: 'Clear All Sites',
     description:
-      'Removes ALL products from your watchlist permanently. This cannot be undone.\n\nUse Export URLs first if you want to save your list before clearing.',
+      'Removes ALL monitored sites and their products permanently. This cannot be undone.\n\nUse Export URLs first if you want to save your list before clearing.',
   },
   exportUrls: {
     title: 'Export URLs',
     description:
-      'Exports all product URLs from your watchlist as a shareable text list.\n\nYou can:\n• Share via Messages, Email, AirDrop, etc.\n• Copy to clipboard for pasting elsewhere\n• Save as a backup before clearing your watchlist\n\nOnly the URLs are exported, not the product details.',
+      'Exports all monitored site URLs as a shareable text list.\n\nYou can:\n• Share via Messages, Email, AirDrop, etc.\n• Copy to clipboard for pasting elsewhere\n• Save as a backup before clearing your sites\n\nOnly the site URLs are exported, not the product details.',
   },
   importUrls: {
     title: 'Import URLs',
     description:
-      'Bulk-add products to your watchlist by pasting URLs.\n\nPaste one URL per line, and FZBot will:\n• Validate each URL\n• Skip any duplicates already in your watchlist\n• Queue new URLs for AI scanning\n\nProducts will show as "Pending scan..." until the next check cycle picks them up.',
+      'Bulk-add sites to monitor by pasting URLs.\n\nPaste one URL per line, and FZBot will:\n• Validate each URL\n• Skip any sites you are already monitoring\n• Start AI product discovery for new sites\n\nProducts will appear once the initial scan completes.',
   },
 };
 
@@ -145,8 +145,8 @@ const AppSettings = ({ navigation }) => {
 
   const handleClearWatchlist = () => {
     Alert.alert(
-      'Clear Watchlist',
-      'Are you sure you want to remove ALL products from your watchlist? This cannot be undone.',
+      'Clear All Sites',
+      'Are you sure you want to remove ALL monitored sites and their products? This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -155,9 +155,9 @@ const AppSettings = ({ navigation }) => {
           onPress: async () => {
             setClearingWatchlist(true);
             try {
-              await clearWatchlist(userId);
+              await clearWatchlist(token);
             } catch (e) {
-              console.log('Clear watchlist error:', e);
+              console.log('Clear sites error:', e);
             }
             setClearingWatchlist(false);
           },
@@ -169,11 +169,11 @@ const AppSettings = ({ navigation }) => {
   const handleExportUrls = async () => {
     setExporting(true);
     try {
-      const response = await exportUrls(userId);
+      const response = await exportUrls(token);
       if (response?.success && response?.data) {
         const urls = response.data;
         if (urls.length === 0) {
-          ShowToast('info', 'No products in your watchlist to export');
+          ShowToast('info', 'No sites to export');
           setExporting(false);
           return;
         }
@@ -208,7 +208,7 @@ const AppSettings = ({ navigation }) => {
 
     setImporting(true);
     try {
-      await importUrls(userId, lines);
+      await importUrls(token, lines);
       setImportModalVisible(false);
       setImportText('');
     } catch (e) {
@@ -366,7 +366,7 @@ const AppSettings = ({ navigation }) => {
         />
 
         <MenuRow
-          title="Clear Watchlist"
+          title="Clear All Sites"
           onPress={handleClearWatchlist}
           loading={clearingWatchlist}
           icon={<MaterialIcons name="delete" size={25} color={AppColors.themeColor} />}
