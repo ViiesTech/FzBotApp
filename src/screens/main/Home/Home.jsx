@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -21,87 +21,10 @@ import LazyImage from '../../../components/LazyImage';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { AppImages } from '../../../assets/images';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { getAllProducts, removeFromWishList } from '../../../GlobalFunctions';
 import { useSelector } from 'react-redux';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import { HomeLoader } from '../../../components/AppTextComps/HomeLoader';
-
-const data = [
-  {
-    id: 1,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 2,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 3,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 4,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 5,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 6,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 7,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 8,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-  {
-    id: 9,
-    productImg: AppImages.product2,
-    name: 'iPhone 14 Pro',
-    price: '$ 890.00',
-    tag: 'In Stock',
-    time: '5 mins ago',
-  },
-];
 
 const Home = ({ navigation }) => {
   const nav = useNavigation();
@@ -109,11 +32,10 @@ const Home = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [delLoading, setDelLoading] = useState(false);
-  const { _id, name, FCMToken } = useSelector(state => state?.user?.userData);
-  const { userData } = useSelector(state => state?.user);
+  const { _id, name } = useSelector(state => state?.user?.userData);
   const isFocus = useIsFocused();
-  const [skeletonCount, setSkeletonCount] = useState(6);
-  const getAllProductsHandler = async () => {
+  const skeletonCount = 6;
+  const getAllProductsHandler = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await getAllProducts(_id);
@@ -122,7 +44,7 @@ const Home = ({ navigation }) => {
     } catch (error) {
       setIsLoading(false);
     }
-  };
+  }, [_id]);
 
   const removeWishlistHandler = async id => {
     setDelLoading(true);
@@ -138,7 +60,7 @@ const Home = ({ navigation }) => {
   };
   useEffect(() => {
     getAllProductsHandler();
-  }, [isFocus]);
+  }, [isFocus, getAllProductsHandler]);
 
   // Filter products by search query
   const filteredData = searchQuery.trim()
@@ -146,28 +68,10 @@ const Home = ({ navigation }) => {
         const q = searchQuery.toLowerCase();
         return (
           (item.title && item.title.toLowerCase().includes(q)) ||
-          (item.price && item.price.toLowerCase().includes(q)) ||
-          (item.availability && item.availability.toLowerCase().includes(q))
+          (item.price && item.price.toLowerCase().includes(q))
         );
       })
     : data;
-
-  // Get badge color based on availability (only In Stock = green, Out of Stock = red)
-  const getAvailabilityColor = (availability) => {
-    if (!availability) return AppColors.lightGreen;
-    const lower = availability.toLowerCase();
-    if (lower.includes('out') || lower.includes('sold')) return AppColors.RED_COLOR;
-    return AppColors.lightGreen;
-  };
-
-  // Normalize availability display text
-  const getAvailabilityText = (availability) => {
-    if (!availability) return 'In Stock';
-    const lower = availability.toLowerCase();
-    if (lower === 'in stock' || lower === 'out of stock') return availability;
-    if (lower.includes('out') || lower.includes('sold')) return 'Out of Stock';
-    return 'In Stock';
-  };
 
   // Format time ago
   const getTimeAgo = (dateStr) => {
@@ -223,29 +127,13 @@ const Home = ({ navigation }) => {
         }}
       >
         <AppText
-          textwidth={20}
+          textwidth={40}
           numberOfLines={1}
           title={item.title}
           textColor={AppColors.BLACK}
           textSize={1.6}
           textFontWeight
         />
-
-        <View
-          style={{
-            backgroundColor: getAvailabilityColor(item.availability),
-            paddingHorizontal: responsiveWidth(2.5),
-            paddingVertical: responsiveHeight(0.5),
-            borderRadius: 5,
-          }}
-        >
-          <AppText
-            title={getAvailabilityText(item.availability)}
-            textColor={AppColors.WHITE}
-            textSize={1.2}
-            textFontWeight
-          />
-        </View>
       </View>
 
       <AppText

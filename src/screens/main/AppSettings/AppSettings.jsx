@@ -44,22 +44,17 @@ const INFO_MAP = {
   instantAlerts: {
     title: 'Instant Alerts',
     description:
-      'When enabled, you will receive a push notification immediately whenever a product in your watchlist changes — for example, when it comes back in stock, goes out of stock, or its price changes.\n\nTurn this off if you prefer to check manually or only use the Daily Digest.',
+      'When enabled, you will receive a push notification whenever a monitored site discovers new products.\n\nTurn this off if you prefer to check manually or only use the Daily Digest.',
   },
   dailyDigest: {
     title: 'Daily Digest',
     description:
-      'When enabled, you will receive a single summary notification every day at 9:00 AM with all the changes that happened in the last 24 hours.\n\nThis is great if you don\'t want to be interrupted throughout the day but still want to stay informed. Works alongside or instead of Instant Alerts.',
-  },
-  priorityAlertsOnly: {
-    title: 'Priority Alerts Only',
-    description:
-      'When enabled, push notifications are only sent for the most important event: a product coming BACK IN STOCK.\n\nYou will NOT receive push alerts for:\n• Products going out of stock\n• Price changes\n\nNote: All changes are still recorded and visible in your Notifications tab — this only filters the push alerts.',
+      'When enabled, you will receive a single summary notification every day at 9:00 AM with newly discovered products from the last 24 hours.\n\nThis is useful if you do not want to be interrupted throughout the day.',
   },
   checkFrequency: {
     title: 'Check Frequency',
     description:
-      'Controls how often FZBot re-scans your tracked products for changes.\n\n• Every 1 Hour — Most frequent, catches changes fast\n• Every 6 Hours — Good balance of speed and efficiency\n• Every 12 Hours — Twice a day checks\n• Every 24 Hours — Once a day, lightest on resources\n\nLower frequencies mean faster detection but slightly more server usage.',
+      'Controls how often FZBot re-scans your monitored sites for newly added products.\n\n• Every 1 Hour — Most frequent, catches additions fast\n• Every 6 Hours — Good balance of speed and efficiency\n• Every 12 Hours — Twice a day checks\n• Every 24 Hours — Once a day, lightest on resources\n\nLower frequencies mean faster detection but slightly more server usage.',
   },
   clearWatchlist: {
     title: 'Clear All Sites',
@@ -86,7 +81,6 @@ const AppSettings = ({ navigation }) => {
 
   const [instantAlerts, setInstantAlerts] = useState(userData?.instantAlerts !== false);
   const [dailyDigest, setDailyDigest] = useState(userData?.dailyDigest || false);
-  const [priorityOnly, setPriorityOnly] = useState(userData?.priorityAlertsOnly || false);
   const [selectedFreq, setSelectedFreq] = useState(userData?.checkFrequency || 60);
   const [saving, setSaving] = useState(false);
   const [clearingWatchlist, setClearingWatchlist] = useState(false);
@@ -130,12 +124,6 @@ const AppSettings = ({ navigation }) => {
     const newVal = !dailyDigest;
     setDailyDigest(newVal);
     saveSettings({ dailyDigest: newVal });
-  };
-
-  const togglePriorityOnly = () => {
-    const newVal = !priorityOnly;
-    setPriorityOnly(newVal);
-    saveSettings({ priorityAlertsOnly: newVal });
   };
 
   const selectFrequency = (value) => {
@@ -297,7 +285,6 @@ const AppSettings = ({ navigation }) => {
 
         <ToggleRow title="Instant Alerts" value={instantAlerts} onToggle={toggleInstantAlerts} infoKey="instantAlerts" />
         <ToggleRow title="Daily Digest" value={dailyDigest} onToggle={toggleDailyDigest} infoKey="dailyDigest" />
-        <ToggleRow title="Priority Alerts Only" value={priorityOnly} onToggle={togglePriorityOnly} infoKey="priorityAlertsOnly" />
 
         <LineBreak space={2.5} />
 

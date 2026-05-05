@@ -26,9 +26,9 @@ const OnBoarding = ({ navigation }) => {
     },
     {
       key: 2,
-      title: 'Be the first to know. Real-time stock updates.',
+      title: 'Be the first to know when new products appear.',
       detail:
-        'No more refreshing product pages. We’ll notify you instantly when an item is back in stock or when the price changes.',
+        'No more refreshing listing pages. We’ll notify you when monitored sites add new products.',
       bg: AppImages.onboarding2,
     },
     {

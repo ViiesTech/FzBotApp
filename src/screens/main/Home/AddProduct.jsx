@@ -13,7 +13,6 @@ import {
   fetchDetails,
   ShowToast,
 } from '../../../GlobalFunctions';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import { useSelector } from 'react-redux';
 import { FetchProductLoader } from '../../../components/AppTextComps/HomeLoader';
 import LazyImage from '../../../components/LazyImage';
@@ -221,27 +220,6 @@ const AddProduct = ({ navigation }) => {
                         ? data?.description
                         : 'Product Description —'
                     }
-                    textColor="#50555C"
-                    textSize={1.7}
-                  />
-                </View>
-              </View>
-              <View style={{ gap: responsiveHeight(1) }}>
-                <AppText
-                  title="Product Availability"
-                  textSize={2}
-                  textColor="#50555C"
-                />
-                <View
-                  style={{
-                    borderWidth: 1.5,
-                    borderColor: '#DFDFDF',
-                    padding: responsiveHeight(2),
-                    borderRadius: responsiveHeight(1.5),
-                  }}
-                >
-                  <AppText
-                    title={data?.availability ? data?.availability : 'Stock —'}
                     textColor="#50555C"
                     textSize={1.7}
                   />

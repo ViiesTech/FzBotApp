@@ -2,31 +2,25 @@
 import React, { useState } from 'react';
 import {
   View,
-  TouchableOpacity,
   Linking,
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import {
   AppColors,
-  responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
 import LazyImage from '../../../components/LazyImage';
 import AppHeader from '../../../components/AppHeader';
-import { AppImages } from '../../../assets/images';
 import AppText from '../../../components/AppTextComps/AppText';
-import AppTextInput from '../../../components/AppTextInput';
-import Entypo from 'react-native-vector-icons/Entypo';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppButton from '../../../components/AppButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { removeFromWishList } from '../../../GlobalFunctions';
 
 const HomeDetails = ({ navigation, route }) => {
   const productData = route?.params?.data || {};
-  const { availability = '', description = '', image = '', price = '', productLink = '', title = 'Product', userId = '', _id = '', lastCheckedAt = '' } = productData;
+  const { image = '', price = '', productLink = '', title = 'Product', _id = '', lastCheckedAt = '' } = productData;
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -99,27 +93,6 @@ const HomeDetails = ({ navigation, route }) => {
             <AppText title={title} textColor={AppColors.GRAY} textSize={2} />
           </AppText>
 
-          <View
-            style={{
-              backgroundColor: (!availability || !availability.toLowerCase().includes('out'))
-                ? AppColors.lightGreen
-                : AppColors.RED_COLOR,
-              paddingHorizontal: responsiveWidth(2.5),
-              paddingVertical: responsiveHeight(0.5),
-              height: responsiveHeight(3.5),
-              justifyContent: 'center',
-              marginTop: responsiveHeight(0.5),
-              alignItems: 'center',
-              borderRadius: 5,
-            }}
-          >
-            <AppText
-              title={(!availability || availability === 'In Stock' || !availability.toLowerCase().includes('out')) ? 'In Stock' : 'Out of Stock'}
-              textColor={AppColors.WHITE}
-              textSize={1.5}
-              textFontWeight
-            />
-          </View>
         </View>
         <AppText
           title={'Product URL: '}
@@ -157,53 +130,27 @@ const HomeDetails = ({ navigation, route }) => {
           textSize={1.6}
         />
 
-        {/* <AppTextInput
-          inputPlaceHolder={'High Priority (Always notify instantly)'}
-          containerBg={AppColors.WHITE}
-          borderWidth={1}
-          inputContainerPaddingHorizontal={4}
-          borderColor={AppColors.LIGHTGRAY}
-          inputWidth={70}
-          logo={
-            <FontAwesome
-              size={responsiveFontSize(1.7)}
-              name={'bell'}
-              color={AppColors.themeColor}
-            />
-          }
-          rightIcon={
-            <TouchableOpacity>
-              <Entypo
-                size={responsiveFontSize(3)}
-                name={'chevron-small-down'}
-                color={AppColors.themeColor}
-              />
-            </TouchableOpacity>
-          }
-        /> */}
         </View>
-        {availability !== 'New Item' && (
-          <View
-            style={{
-              paddingHorizontal: responsiveWidth(4),
-              paddingTop: responsiveHeight(3),
-            }}
-          >
-            <AppButton
-              title={
-                isLoading ? (
-                  <ActivityIndicator size={'large'} color={AppColors.WHITE} />
-                ) : (
-                  'Remove From Wishlist'
-                )
-              }
-              textColor={AppColors.WHITE}
-              btnBackgroundColor={AppColors.themeColor}
-              handlePress={removeWishlistHandler}
-              textFontWeight={false}
-            />
-          </View>
-        )}
+        <View
+          style={{
+            paddingHorizontal: responsiveWidth(4),
+            paddingTop: responsiveHeight(3),
+          }}
+        >
+          <AppButton
+            title={
+              isLoading ? (
+                <ActivityIndicator size={'large'} color={AppColors.WHITE} />
+              ) : (
+                'Remove From Wishlist'
+              )
+            }
+            textColor={AppColors.WHITE}
+            btnBackgroundColor={AppColors.themeColor}
+            handlePress={removeWishlistHandler}
+            textFontWeight={false}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

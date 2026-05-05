@@ -116,7 +116,7 @@ const AddSite = () => {
           <LineBreak space={0.5} />
           <AppText
             title={
-              '• Paste a product listing page URL (e.g. category page)\n• Our AI will automatically discover all products\n• Products will be monitored for price changes, stock updates, and new arrivals'
+              '• Paste a product listing page URL (e.g. category page)\n• Our AI will automatically discover all products\n• The app will monitor the site for newly added products'
             }
             textColor={AppColors.GRAY}
             textSize={1.3}

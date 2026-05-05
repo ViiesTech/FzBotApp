@@ -6,7 +6,6 @@ import {
   View,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {
@@ -22,7 +21,6 @@ import LazyImage from '../../../components/LazyImage';
 import AppHeader from '../../../components/AppHeader';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {getSiteProducts, recrawlSite, getSiteById} from '../../../GlobalFunctions';
 import {useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
@@ -40,7 +38,6 @@ const SiteDetail = ({route}) => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [recrawling, setRecrawling] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('active');
 
   const fetchProducts = useCallback(
     async (p = 1, append = false) => {
@@ -52,7 +49,7 @@ const SiteDetail = ({route}) => {
           p,
           50,
           searchQuery,
-          statusFilter,
+          'active',
         );
         if (response?.success) {
           const newProducts = response.data || [];
@@ -71,7 +68,7 @@ const SiteDetail = ({route}) => {
       setIsLoading(false);
       setLoadingMore(false);
     },
-    [token, siteData._id, searchQuery, statusFilter],
+    [token, siteData._id, searchQuery],
   );
 
   const onRefresh = useCallback(async () => {
@@ -115,7 +112,7 @@ const SiteDetail = ({route}) => {
       } catch (e) {}
       // Also refresh products to show incremental progress
       fetchProducts(1, false);
-    }, 15000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [siteData.status, siteData._id, token, fetchProducts]);
 
@@ -123,23 +120,6 @@ const SiteDetail = ({route}) => {
     setPage(1);
     fetchProducts(1, false);
   }, [fetchProducts]);
-
-  const getAvailabilityColor = availability => {
-    if (!availability) return AppColors.GRAY;
-    const lower = availability.toLowerCase();
-    if (lower.includes('out') || lower.includes('sold'))
-      return AppColors.RED_COLOR;
-    if (lower.includes('in stock')) return AppColors.lightGreen;
-    return AppColors.GRAY;
-  };
-
-  const getAvailabilityText = availability => {
-    if (!availability) return 'Unknown';
-    const lower = availability.toLowerCase();
-    if (lower.includes('out') || lower.includes('sold')) return 'Out of Stock';
-    if (lower.includes('in stock') || lower === 'in stock') return 'In Stock';
-    return availability;
-  };
 
   const renderProduct = ({item}) => (
     <TouchableOpacity
@@ -180,38 +160,7 @@ const SiteDetail = ({route}) => {
             textSize={1.5}
             textFontWeight
           />
-          <View
-            style={{
-              backgroundColor: getAvailabilityColor(item.availability),
-              paddingHorizontal: responsiveWidth(2),
-              paddingVertical: 2,
-              borderRadius: 4,
-            }}>
-            <AppText
-              title={getAvailabilityText(item.availability)}
-              textColor={AppColors.WHITE}
-              textSize={1}
-              textFontWeight
-            />
-          </View>
         </View>
-
-        {/* Price history indicator */}
-        {item.priceHistory && item.priceHistory.length > 1 && (
-          <View
-            style={{flexDirection: 'row', alignItems: 'center', gap: 3}}>
-            <MaterialCommunityIcons
-              size={responsiveFontSize(1.2)}
-              name={'chart-line'}
-              color={AppColors.GRAY}
-            />
-            <AppText
-              title={`${item.priceHistory.length} price changes`}
-              textColor={AppColors.GRAY}
-              textSize={1}
-            />
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );
@@ -275,37 +224,6 @@ const SiteDetail = ({route}) => {
         </TouchableOpacity>
       </View>
 
-      {/* Status filter */}
-      <View
-        style={{
-          flexDirection: 'row',
-          gap: responsiveWidth(2),
-          marginBottom: responsiveHeight(1.5),
-        }}>
-        {['active', 'removed', 'all'].map(st => (
-          <TouchableOpacity
-            key={st}
-            onPress={() => setStatusFilter(st)}
-            style={{
-              paddingHorizontal: responsiveWidth(3.5),
-              paddingVertical: responsiveHeight(0.6),
-              borderRadius: 20,
-              backgroundColor:
-                statusFilter === st
-                  ? AppColors.themeColor
-                  : AppColors.LIGHTESTGRAY,
-            }}>
-            <AppText
-              title={st.charAt(0).toUpperCase() + st.slice(1)}
-              textColor={
-                statusFilter === st ? AppColors.WHITE : AppColors.GRAY
-              }
-              textSize={1.3}
-              textFontWeight={statusFilter === st}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
     </View>
   );
 
@@ -346,7 +264,7 @@ const SiteDetail = ({route}) => {
           <FlatList
             data={products}
             numColumns={2}
-            keyExtractor={item => item._id}
+            keyExtractor={(item, index) => `${item._id}_${index}`}
             ListHeaderComponent={ListHeader}
             ItemSeparatorComponent={() => <LineBreak space={1} />}
             columnWrapperStyle={{gap: responsiveWidth(3)}}

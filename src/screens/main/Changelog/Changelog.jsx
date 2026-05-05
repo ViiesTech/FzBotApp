@@ -20,7 +20,6 @@ import AppText from '../../../components/AppTextComps/AppText';
 import LazyImage from '../../../components/LazyImage';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useIsFocused} from '@react-navigation/native';
 import {getSiteChangelog, markChangesRead} from '../../../GlobalFunctions';
 import {useSelector} from 'react-redux';
@@ -28,24 +27,12 @@ import {useSelector} from 'react-redux';
 const changeTypes = [
   {value: '', label: 'All'},
   {value: 'new_product', label: 'New'},
-  {value: 'removed_product', label: 'Removed'},
-  {value: 'price_change', label: 'Price'},
-  {value: 'stock_change', label: 'Out of Stock'},
-  {value: 'back_in_stock', label: 'Back in Stock'},
 ];
 
 const getChangeIcon = type => {
   switch (type) {
     case 'new_product':
       return '🆕';
-    case 'removed_product':
-      return '🗑️';
-    case 'price_change':
-      return '💰';
-    case 'stock_change':
-      return '📦';
-    case 'back_in_stock':
-      return '✅';
     default:
       return '🔔';
   }
@@ -55,14 +42,6 @@ const getChangeTypeColor = type => {
   switch (type) {
     case 'new_product':
       return {bg: '#E8F5E9', text: '#2E7D32'};
-    case 'removed_product':
-      return {bg: '#FFEBEE', text: '#C62828'};
-    case 'price_change':
-      return {bg: '#FFF3E0', text: '#E65100'};
-    case 'stock_change':
-      return {bg: '#E3F2FD', text: '#1565C0'};
-    case 'back_in_stock':
-      return {bg: '#E8F5E9', text: '#1B5E20'};
     default:
       return {bg: '#F5F5F5', text: '#616161'};
   }
@@ -72,38 +51,9 @@ const getChangeLabel = type => {
   switch (type) {
     case 'new_product':
       return 'New Product';
-    case 'removed_product':
-      return 'Removed from Site';
-    case 'price_change':
-      return 'Price Change';
-    case 'stock_change':
-      return 'Out of Stock';
-    case 'back_in_stock':
-      return 'Back in Stock';
     default:
       return type;
   }
-};
-
-// Semantic color: "In Stock" = green, "Out of Stock" = red
-// For prices: lower = green, higher = red (compare both values)
-const getValueColor = (value, otherValue) => {
-  if (!value) return AppColors.GRAY;
-  const lower = value.toLowerCase();
-  // Stock-based
-  if (lower.includes('in stock')) return AppColors.lightGreen;
-  if (lower.includes('out of stock') || lower.includes('sold')) return AppColors.RED_COLOR;
-  // Price-based: parse both and compare
-  const parsePrice = str => {
-    if (!str) return NaN;
-    return parseFloat(str.replace(/[^0-9.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.'));
-  };
-  const thisNum = parsePrice(value);
-  const otherNum = parsePrice(otherValue);
-  if (!isNaN(thisNum) && !isNaN(otherNum)) {
-    return thisNum <= otherNum ? AppColors.lightGreen : AppColors.RED_COLOR;
-  }
-  return AppColors.GRAY;
 };
 
 const Changelog = () => {
@@ -114,7 +64,6 @@ const Changelog = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const {_id} = useSelector(state => state?.user?.userData);
   const token = useSelector(state => state?.user?.token);
   const isFocus = useIsFocused();
 
@@ -178,7 +127,7 @@ const Changelog = () => {
       setPage(1);
       fetchChanges(1, false);
     }
-  }, [isFocus]);
+  }, [isFocus, fetchChanges]);
 
   const getTimeAgo = dateStr => {
     if (!dateStr) return '';
@@ -224,33 +173,6 @@ const Changelog = () => {
                 textColor={AppColors.GRAY}
                 textSize={1.2}
               />
-            )}
-
-            {/* Old → New values */}
-            {item.oldValue && item.newValue && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: AppColors.LIGHTESTGRAY,
-                  padding: responsiveWidth(2),
-                  borderRadius: 6,
-                  marginTop: responsiveHeight(0.5),
-                  gap: 4,
-                }}>
-                <AppText
-                  title={item.oldValue}
-                  textColor={getValueColor(item.oldValue, item.newValue)}
-                  textSize={1.2}
-                />
-                <AppText title={'→'} textColor={AppColors.GRAY} textSize={1.2} />
-                <AppText
-                  title={item.newValue}
-                  textColor={getValueColor(item.newValue, item.oldValue)}
-                  textSize={1.2}
-                  textFontWeight
-                />
-              </View>
             )}
 
             {/* Meta row */}
@@ -338,7 +260,7 @@ const Changelog = () => {
           textFontWeight
         />
         <AppText
-          title={'All detected changes across your sites'}
+          title={'New product additions across your sites'}
           textColor={AppColors.GRAY}
           textSize={1.4}
         />
@@ -421,14 +343,14 @@ const Changelog = () => {
                 />
                 <LineBreak space={1.5} />
                 <AppText
-                  title={'No changes detected yet'}
+                  title={'No new products yet'}
                   textColor={AppColors.GRAY}
                   textSize={1.6}
                   textFontWeight
                 />
                 <LineBreak space={0.5} />
                 <AppText
-                  title={'Changes will appear here once your sites are crawled'}
+                  title={'New additions will appear here after crawls'}
                   textColor={AppColors.DARKGRAY}
                   textSize={1.3}
                 />

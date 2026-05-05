@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, FlatList, Image, TouchableOpacity } from 'react-native';
 import Container from '../../../components/Container';
 import AppHeader from '../../../components/AppHeader';
@@ -18,7 +18,7 @@ const Notification = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const isFocus = useIsFocused();
 
-  const getNotificationsHandler = async () => {
+  const getNotificationsHandler = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await getNotificationsByUserId(_id);
@@ -27,26 +27,22 @@ const Notification = ({ navigation }) => {
     } catch (error) {
       setIsLoading(false);
     }
-  };
+  }, [_id]);
 
   useEffect(() => {
     getNotificationsHandler();
-  }, [isFocus]);
+  }, [isFocus, getNotificationsHandler]);
 
   const getNotifIcon = (type) => {
     switch (type) {
-      case 'in_stock': return { name: 'checkmark-circle', color: AppColors.lightGreen };
-      case 'out_of_stock': return { name: 'close-circle', color: AppColors.RED_COLOR };
-      case 'price_change': return { name: 'pricetag', color: '#F5A623' };
+      case 'new_product': return { name: 'cube', color: AppColors.themeColor };
       default: return { name: 'notifications', color: AppColors.themeColor };
     }
   };
 
   const getNotifBadge = (type) => {
     switch (type) {
-      case 'in_stock': return { text: 'In Stock', bg: AppColors.lightGreen };
-      case 'out_of_stock': return { text: 'Out of Stock', bg: AppColors.RED_COLOR };
-      case 'price_change': return { text: 'Price Change', bg: '#F5A623' };
+      case 'new_product': return { text: 'New Product', bg: AppColors.themeColor };
       default: return { text: 'Update', bg: AppColors.themeColor };
     }
   };
@@ -69,7 +65,7 @@ const Notification = ({ navigation }) => {
             textSize={1.8}
           />
           <AppText
-            title="You'll be notified when products change"
+            title="You'll be notified when new products are discovered"
             textColor={AppColors.LIGHTGRAY}
             textSize={1.4}
           />
@@ -86,7 +82,6 @@ const Notification = ({ navigation }) => {
                   navigation.navigate('HomeDetails', {
                     data: {
                       ...item,
-                      availability: item.type === 'out_of_stock' ? 'Out of Stock' : 'In Stock',
                       productLink: item?.link,
                     },
                   })
