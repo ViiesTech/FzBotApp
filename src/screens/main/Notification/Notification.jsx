@@ -76,16 +76,16 @@ const Notification = ({ navigation }) => {
           renderItem={({ item }) => {
             const icon = getNotifIcon(item.type);
             const badge = getNotifBadge(item.type);
+            const productUrl = item?.link || item?.productUrl || '';
             return (
               <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('HomeDetails', {
-                    data: {
-                      ...item,
-                      productLink: item?.link,
-                    },
-                  })
-                }
+                onPress={() => {
+                  if (!productUrl) return;
+                  navigation.navigate('ProductWebView', {
+                    url: productUrl,
+                    title: item?.title || 'Product',
+                  });
+                }}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -134,6 +134,19 @@ const Notification = ({ navigation }) => {
                     textColor={AppColors.GRAY}
                     textSize={1.3}
                   />
+
+                  {productUrl ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="link-outline" size={14} color={AppColors.themeColor} />
+                      <AppText
+                        numberOfLines={1}
+                        title={productUrl}
+                        textColor={AppColors.themeColor}
+                        textSize={1.2}
+                        textwidth={62}
+                      />
+                    </View>
+                  ) : null}
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <View style={{

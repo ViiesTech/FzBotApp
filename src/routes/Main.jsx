@@ -10,6 +10,7 @@ import MySites from '../screens/main/Sites/MySites';
 import AddSite from '../screens/main/Sites/AddSite';
 import SiteDetail from '../screens/main/Sites/SiteDetail';
 import ProductDetail from '../screens/main/Sites/ProductDetail';
+import ProductWebView from '../screens/main/ProductWebView/ProductWebView';
 import Changelog from '../screens/main/Changelog/Changelog';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
@@ -33,6 +34,7 @@ const Main = () => {
       <Stack.Screen name="AddSite" component={AddSite} />
       <Stack.Screen name="SiteDetail" component={SiteDetail} />
       <Stack.Screen name="ProductDetail" component={ProductDetail} />
+      <Stack.Screen name="ProductWebView" component={ProductWebView} />
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="ChangePassword" component={ChangePassword} />
       <Stack.Screen name="PersonalInformation" component={PersonalInformation} />

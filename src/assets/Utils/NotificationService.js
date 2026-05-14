@@ -29,8 +29,19 @@ export function setupNotificationListeners() {
   requestUserPermission();
 
   // Handle notifee notification tap (foreground-displayed notifications)
-  notifee.onForegroundEvent(({ type }) => {
+  notifee.onForegroundEvent(({ type, detail }) => {
     if (type === EventType.PRESS) {
+      const data = detail?.notification?.data || {};
+      if (data.productUrl) {
+        navigationRef.current?.navigate('Main', {
+          screen: 'ProductWebView',
+          params: {
+            url: data.productUrl,
+            title: detail?.notification?.title || 'Product',
+          },
+        });
+        return;
+      }
       navigationRef.current?.navigate('Main', { screen: 'Main', params: { screen: 'Changelog' } });
     }
   });
@@ -40,6 +51,7 @@ export function setupNotificationListeners() {
     await notifee.displayNotification({
       title: remoteMessage?.notification?.title,
       body: remoteMessage?.notification?.body,
+      data: remoteMessage?.data || {},
       android: {
         channelId: 'FZBot1234',
         smallIcon: 'ic_launcher',

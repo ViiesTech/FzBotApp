@@ -14,6 +14,21 @@ import ErrorBoundary from './src/components/ErrorBoundary';
 
 const App = () => {
 
+  const openNotificationTarget = (remoteMessage?: any) => {
+    const data = remoteMessage?.data || {};
+    if (data.productUrl) {
+      navigationRef.current?.navigate('Main', {
+        screen: 'ProductWebView',
+        params: {
+          url: data.productUrl,
+          title: remoteMessage?.notification?.title || 'Product',
+        },
+      });
+      return;
+    }
+    navigationRef.current?.navigate('Main', { screen: 'Main', params: { screen: 'Changelog' } });
+  };
+
   const requestAndroidPermission = async () => {
     if (Platform.OS === 'android' && Platform.Version >= 33) {
       const granted = await PermissionsAndroid.request(
@@ -37,8 +52,8 @@ const App = () => {
     requestPermissions();
 
     // Handle notification tap when app is in background
-    const unsubscribeOnOpen = messaging().onNotificationOpenedApp(() => {
-      navigationRef.current?.navigate('Main', { screen: 'Main', params: { screen: 'Changelog' } });
+    const unsubscribeOnOpen = messaging().onNotificationOpenedApp(remoteMessage => {
+      openNotificationTarget(remoteMessage);
     });
 
     // Handle notification tap when app was killed (cold start)
@@ -46,7 +61,7 @@ const App = () => {
       if (remoteMessage) {
         // Small delay to ensure navigation is ready
         setTimeout(() => {
-          navigationRef.current?.navigate('Main', { screen: 'Main', params: { screen: 'Changelog' } });
+          openNotificationTarget(remoteMessage);
         }, 1000);
       }
     });

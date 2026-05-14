@@ -17,7 +17,6 @@ import {
 import LineBreak from '../../../components/LineBreak';
 import AppText from '../../../components/AppTextComps/AppText';
 import AppTextInput from '../../../components/AppTextInput';
-import LazyImage from '../../../components/LazyImage';
 import AppHeader from '../../../components/AppHeader';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -121,49 +120,64 @@ const SiteDetail = ({route}) => {
     fetchProducts(1, false);
   }, [fetchProducts]);
 
-  const renderProduct = ({item}) => (
-    <TouchableOpacity
-      style={{
-        borderWidth: 1,
-        borderColor: AppColors.LIGHTGRAY,
-        borderRadius: 10,
-        width: responsiveWidth(44),
-        overflow: 'hidden',
-      }}
-      onPress={() => nav.navigate('ProductDetail', {product: item})}
-      activeOpacity={0.7}>
-      <LazyImage
-        source={{uri: item.image}}
+  const renderProduct = ({item}) => {
+    const title = item.title || item.url || 'Product URL';
+    return (
+      <TouchableOpacity
         style={{
-          width: responsiveWidth(44),
-          height: responsiveHeight(12),
+          borderWidth: 1,
+          borderColor: AppColors.LIGHTGRAY,
+          borderRadius: 8,
+          padding: responsiveWidth(3),
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: responsiveWidth(2.5),
         }}
-        resizeMode="cover"
-      />
-      <View style={{padding: responsiveWidth(2.5), gap: responsiveHeight(0.5)}}>
-        <AppText
-          title={item.title || 'Untitled'}
-          textColor={AppColors.BLACK}
-          textSize={1.4}
-          textFontWeight
-          numberOfLines={2}
-        />
+        onPress={() =>
+          nav.navigate('ProductWebView', {
+            url: item.url,
+            title,
+          })
+        }
+        activeOpacity={0.7}>
         <View
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
+            width: responsiveHeight(4.4),
+            height: responsiveHeight(4.4),
+            borderRadius: 8,
+            backgroundColor: AppColors.LIGHTESTGRAY,
             alignItems: 'center',
+            justifyContent: 'center',
           }}>
-          <AppText
-            title={item.price || 'N/A'}
-            textColor={AppColors.themeColor}
-            textSize={1.5}
-            textFontWeight
+          <Ionicons
+            name="link-outline"
+            size={responsiveFontSize(2)}
+            color={AppColors.themeColor}
           />
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+        <View style={{flex: 1, gap: responsiveHeight(0.3)}}>
+          <AppText
+            title={title}
+            textColor={AppColors.BLACK}
+            textSize={1.35}
+            textFontWeight
+            numberOfLines={2}
+          />
+          <AppText
+            title={item.url || ''}
+            textColor={AppColors.GRAY}
+            textSize={1.15}
+            numberOfLines={1}
+          />
+        </View>
+        <Feather
+          size={responsiveFontSize(2)}
+          name={'external-link'}
+          color={AppColors.themeColor}
+        />
+      </TouchableOpacity>
+    );
+  };
 
   const ListHeader = () => (
     <View>
@@ -180,7 +194,7 @@ const SiteDetail = ({route}) => {
         }}>
         <View style={{flex: 1}}>
           <AppText
-            title={`${products.length}${hasMore ? '+' : ''} products`}
+            title={`${products.length}${hasMore ? '+' : ''} monitored URLs`}
             textColor={AppColors.BLACK}
             textSize={1.4}
             textFontWeight
@@ -263,11 +277,10 @@ const SiteDetail = ({route}) => {
         ) : (
           <FlatList
             data={products}
-            numColumns={2}
+            numColumns={1}
             keyExtractor={(item, index) => `${item._id}_${index}`}
             ListHeaderComponent={ListHeader}
             ItemSeparatorComponent={() => <LineBreak space={1} />}
-            columnWrapperStyle={{gap: responsiveWidth(3)}}
             contentContainerStyle={{paddingBottom: responsiveHeight(10)}}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"

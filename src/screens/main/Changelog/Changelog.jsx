@@ -6,7 +6,6 @@ import {
   View,
   ActivityIndicator,
   RefreshControl,
-  Linking,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {
@@ -20,7 +19,7 @@ import AppText from '../../../components/AppTextComps/AppText';
 import LazyImage from '../../../components/LazyImage';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useIsFocused} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {getSiteChangelog, markChangesRead} from '../../../GlobalFunctions';
 import {useSelector} from 'react-redux';
 
@@ -66,6 +65,7 @@ const Changelog = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const token = useSelector(state => state?.user?.token);
   const isFocus = useIsFocused();
+  const navigation = useNavigation();
 
   const fetchChanges = useCallback(
     async (p = 1, append = false) => {
@@ -205,7 +205,12 @@ const Changelog = () => {
               />
               {item.productSnapshot?.url && (
                 <TouchableOpacity
-                  onPress={() => Linking.openURL(item.productSnapshot.url)}
+                  onPress={() =>
+                    navigation.navigate('ProductWebView', {
+                      url: item.productSnapshot.url,
+                      title: item.productSnapshot?.title || 'Product',
+                    })
+                  }
                   style={{flexDirection: 'row', alignItems: 'center', gap: 2}}>
                   <Feather
                     size={responsiveFontSize(1.1)}
@@ -254,7 +259,7 @@ const Changelog = () => {
       <View style={{flex: 1, paddingHorizontal: responsiveWidth(4)}}>
         <LineBreak space={2} />
         <AppText
-          title={'Changelog'}
+          title={'Notifications'}
           textColor={AppColors.BLACK}
           textSize={2.5}
           textFontWeight
