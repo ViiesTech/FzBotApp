@@ -23,13 +23,14 @@ import Fontisto from 'react-native-vector-icons/Fontisto';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AppText from '../../../components/AppTextComps/AppText';
 import { useSelector, useDispatch } from 'react-redux';
-import { setUserData } from '../../../redux/Slices';
+import { clearToken, setUserData } from '../../../redux/Slices';
 import {
   updateUserSettings,
   ShowToast,
   exportUrls,
   importUrls,
   clearWatchlist,
+  logoutUser,
 } from '../../../GlobalFunctions';
 
 const FREQ_OPTIONS = [
@@ -44,12 +45,7 @@ const INFO_MAP = {
   instantAlerts: {
     title: 'Instant Alerts',
     description:
-      'When enabled, you will receive a push notification whenever a monitored site discovers new products.\n\nTurn this off if you prefer to check manually or only use the Daily Digest.',
-  },
-  dailyDigest: {
-    title: 'Daily Digest',
-    description:
-      'When enabled, you will receive a single summary notification every day at 9:00 AM with newly discovered products from the last 24 hours.\n\nThis is useful if you do not want to be interrupted throughout the day.',
+      'When enabled, you will receive a push notification only when a monitored site discovers a new active-looking product URL.',
   },
   checkFrequency: {
     title: 'Check Frequency',
@@ -80,7 +76,6 @@ const AppSettings = ({ navigation }) => {
   const userId = userData?._id;
 
   const [instantAlerts, setInstantAlerts] = useState(userData?.instantAlerts !== false);
-  const [dailyDigest, setDailyDigest] = useState(userData?.dailyDigest || false);
   const [selectedFreq, setSelectedFreq] = useState(userData?.checkFrequency || 60);
   const [saving, setSaving] = useState(false);
   const [clearingWatchlist, setClearingWatchlist] = useState(false);
@@ -118,12 +113,6 @@ const AppSettings = ({ navigation }) => {
     const newVal = !instantAlerts;
     setInstantAlerts(newVal);
     saveSettings({ instantAlerts: newVal });
-  };
-
-  const toggleDailyDigest = () => {
-    const newVal = !dailyDigest;
-    setDailyDigest(newVal);
-    saveSettings({ dailyDigest: newVal });
   };
 
   const selectFrequency = (value) => {
@@ -205,6 +194,24 @@ const AppSettings = ({ navigation }) => {
     setImporting(false);
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log Out',
+          style: 'destructive',
+          onPress: async () => {
+            await logoutUser(userId);
+            dispatch(clearToken());
+          },
+        },
+      ],
+    );
+  };
+
   // ─── Components ─────────────────────────────────────────────
 
   const InfoButton = ({ infoKey }) => (
@@ -230,7 +237,7 @@ const AppSettings = ({ navigation }) => {
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
         <AppText title={title} textColor={AppColors.BLACK} textSize={1.8} />
-        <InfoButton infoKey={infoKey} />
+        {infoKey ? <InfoButton infoKey={infoKey} /> : null}
       </View>
       <TouchableOpacity onPress={onToggle}>
         <FontAwesome5
@@ -283,8 +290,7 @@ const AppSettings = ({ navigation }) => {
           textFontWeight
         />
 
-        <ToggleRow title="Instant Alerts" value={instantAlerts} onToggle={toggleInstantAlerts} infoKey="instantAlerts" />
-        <ToggleRow title="Daily Digest" value={dailyDigest} onToggle={toggleDailyDigest} infoKey="dailyDigest" />
+        <ToggleRow title="New Product Push Alerts" value={instantAlerts} onToggle={toggleInstantAlerts} infoKey="instantAlerts" />
 
         <LineBreak space={2.5} />
 
@@ -372,6 +378,12 @@ const AppSettings = ({ navigation }) => {
           loading={false}
           icon={<Feather name="download" size={25} color={AppColors.themeColor} />}
           infoKey="importUrls"
+        />
+        <MenuRow
+          title="Log Out"
+          onPress={handleLogout}
+          loading={false}
+          icon={<MaterialIcons name="logout" size={25} color={AppColors.RED_COLOR} />}
         />
 
 

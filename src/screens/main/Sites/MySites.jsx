@@ -31,7 +31,7 @@ const MySites = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [delLoading, setDelLoading] = useState(null);
-  const {_id, name} = useSelector(state => state?.user?.userData);
+  const {name} = useSelector(state => state?.user?.userData);
   const token = useSelector(state => state?.user?.token);
   const isFocus = useIsFocused();
 
@@ -178,7 +178,7 @@ const MySites = () => {
             color={AppColors.GRAY}
           />
           <AppText
-            title={`${item.productCount || 0} products`}
+            title={`${item.productCount || 0} tracked URLs`}
             textColor={AppColors.GRAY}
             textSize={1.3}
           />

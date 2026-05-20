@@ -16,7 +16,6 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AppSettings from './../screens/main/AppSettings/AppSettings';
-import Profile from './../screens/main/Profile/Profile';
 import ChangePassword from './../screens/main/Profile/ChangePassword';
 import EditProfile from './../screens/main/Profile/EditProfile';
 import PersonalInformation from './../screens/main/Profile/PersonalInformation';
@@ -134,29 +133,6 @@ function MyTabs() {
                 name={'player-settings'}
                 color={AppColors.GRAY}
               />
-            ),
-        }}
-      />
-      <Tab.Screen
-        name={'Profile'}
-        component={Profile}
-        options={{
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <View style={{ alignItems: 'center' }}>
-                <FontAwesome size={25} name={'user'} color={AppColors.WHITE} />
-                <LineBreak space={0.5} />
-                <View
-                  style={{
-                    width: responsiveHeight(0.7),
-                    height: responsiveHeight(0.7),
-                    borderRadius: 100,
-                    backgroundColor: AppColors.WHITE,
-                  }}
-                />
-              </View>
-            ) : (
-              <FontAwesome size={25} name={'user'} color={AppColors.GRAY} />
             ),
         }}
       />
