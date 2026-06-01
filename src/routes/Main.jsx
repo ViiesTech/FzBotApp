@@ -8,17 +8,12 @@ import { AppColors, responsiveHeight } from '../utils';
 import LineBreak from '../components/LineBreak';
 import MySites from '../screens/main/Sites/MySites';
 import AddSite from '../screens/main/Sites/AddSite';
-import SiteDetail from '../screens/main/Sites/SiteDetail';
-import ProductDetail from '../screens/main/Sites/ProductDetail';
 import ProductWebView from '../screens/main/ProductWebView/ProductWebView';
 import Changelog from '../screens/main/Changelog/Changelog';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AppSettings from './../screens/main/AppSettings/AppSettings';
-import ChangePassword from './../screens/main/Profile/ChangePassword';
-import EditProfile from './../screens/main/Profile/EditProfile';
-import PersonalInformation from './../screens/main/Profile/PersonalInformation';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -31,12 +26,7 @@ const Main = () => {
     >
       <Stack.Screen name="Main" component={MyTabs} />
       <Stack.Screen name="AddSite" component={AddSite} />
-      <Stack.Screen name="SiteDetail" component={SiteDetail} />
-      <Stack.Screen name="ProductDetail" component={ProductDetail} />
       <Stack.Screen name="ProductWebView" component={ProductWebView} />
-      <Stack.Screen name="EditProfile" component={EditProfile} />
-      <Stack.Screen name="ChangePassword" component={ChangePassword} />
-      <Stack.Screen name="PersonalInformation" component={PersonalInformation} />
     </Stack.Navigator>
   );
 };

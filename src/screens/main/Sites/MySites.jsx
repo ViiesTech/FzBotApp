@@ -109,7 +109,7 @@ const MySites = () => {
   };
 
   const renderSite = ({item}) => (
-    <TouchableOpacity
+    <View
       style={{
         backgroundColor: AppColors.WHITE,
         borderWidth: 1,
@@ -117,9 +117,7 @@ const MySites = () => {
         borderRadius: 12,
         padding: responsiveWidth(4),
         gap: responsiveHeight(1),
-      }}
-      onPress={() => nav.navigate('SiteDetail', {site: item})}
-      activeOpacity={0.7}>
+      }}>
       {/* Header row: domain + status */}
       <View
         style={{
@@ -239,7 +237,7 @@ const MySites = () => {
           )}
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   return (

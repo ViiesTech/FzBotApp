@@ -23,11 +23,6 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {getSiteChangelog, markChangesRead} from '../../../GlobalFunctions';
 import {useSelector} from 'react-redux';
 
-const changeTypes = [
-  {value: '', label: 'All'},
-  {value: 'new_product', label: 'New'},
-];
-
 const getChangeIcon = type => {
   switch (type) {
     case 'new_product':
@@ -59,7 +54,6 @@ const Changelog = () => {
   const [changes, setChanges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filterType, setFilterType] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -72,7 +66,7 @@ const Changelog = () => {
       if (!token) return;
       if (p === 1 && !append) setIsLoading(true);
       try {
-        const response = await getSiteChangelog(token, p, 30, filterType);
+        const response = await getSiteChangelog(token, p, 30, 'new_product');
         if (response?.success) {
           const newChanges = response.data || [];
           if (append) {
@@ -98,7 +92,7 @@ const Changelog = () => {
       setIsLoading(false);
       setLoadingMore(false);
     },
-    [token, filterType],
+    [token],
   );
 
   const onRefresh = useCallback(async () => {
@@ -268,43 +262,6 @@ const Changelog = () => {
           title={'New product additions across your sites'}
           textColor={AppColors.GRAY}
           textSize={1.4}
-        />
-
-        <LineBreak space={1.5} />
-
-        {/* Filter chips */}
-        <FlatList
-          data={changeTypes}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={item => item.value}
-          contentContainerStyle={{gap: responsiveWidth(2)}}
-          style={{flexGrow: 0}}
-          renderItem={({item: ct}) => (
-            <TouchableOpacity
-              onPress={() => {
-                setFilterType(ct.value);
-                setPage(1);
-              }}
-              style={{
-                paddingHorizontal: responsiveWidth(3.5),
-                paddingVertical: responsiveHeight(0.7),
-                borderRadius: 20,
-                backgroundColor:
-                  filterType === ct.value
-                    ? AppColors.themeColor
-                    : AppColors.LIGHTESTGRAY,
-              }}>
-              <AppText
-                title={ct.label}
-                textColor={
-                  filterType === ct.value ? AppColors.WHITE : AppColors.GRAY
-                }
-                textSize={1.3}
-                textFontWeight={filterType === ct.value}
-              />
-            </TouchableOpacity>
-          )}
         />
 
         <LineBreak space={1.5} />
